@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Entrelaza Polimatute</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">Entrelaza</a>
+
+        {% if usuario %}
+            <div class="d-flex align-items-center ms-auto">
+                <span class="text-light me-3">Hola, {{ usuario.nombre }}</span>
+{% set ya_tiene_proyecto = false %}
+{% for e in equipos %}
+    {% if usuario and usuario.codigo in e.integrantes | map(attribute='codigo') %}
+        {% set ya_tiene_proyecto = true %}
+    {% endif %}
+{% endfor %}
+
+{% if not ya_tiene_proyecto %}
+    <a href="{{ url_for('create_project') }}" class="btn btn-success me-2">
+        <i class="fas fa-plus"></i> Crear proyecto
+    </a>
+{% endif %}
+
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Cerrar sesión</a>
+            </div>
+        {% else %}
+            <div class="ms-auto">
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2">Iniciar sesión</a>
+                <a href="{{ url_for('register') }}" class="btn btn-light">Registrarse</a>
+            </div>
+        {% endif %}
+    </div>
+</nav>
+
+
+<div class="container" style="padding-top:70px;">
+<h2 class="mb-4 text-center">Equipos disponibles</h2>
+
+
+
+
+<div class="row">
+{% for equipo in equipos %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card project-card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Proyecto: {{ equipo.nombre }}</h5>
+                <p class="card-text">{{ equipo.descripcion }}</p>
+                <ul>
+                    <li>Integrantes actuales: {{ equipo.integrantes|length }} / {{ equipo.max_integrantes }}</li>
+                    <li>Carreras faltantes: {{ equipo.carreras_faltantes|join(', ') }}</li>
+                </ul>
+                {% if usuario %}
+    {% set ya_tiene_proyecto = false %}
+    {% for e in equipos %}
+        {% if usuario.codigo in e.integrantes | map(attribute='codigo') %}
+            {% set ya_tiene_proyecto = true %}
+        {% endif %}
+    {% endfor %}
+
+    {% if not ya_tiene_proyecto %}
+        <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
+    {% else %}
+        <p class="text-muted text-center mb-0">Ya perteneces a un proyecto</p>
+    {% endif %}
+{% else %}
+    <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Inicia sesión para unirte</a>
+{% endif %}
+
+            </div>
+        </div>
+    </div>
+{% else %}
+    <p>No hay equipos disponibles.</p>
+{% endfor %}
+</div>
+
+{% if usuario %}
+    {% set mi_proyecto = None %}
+    {% for p in equipos %}
+        {% if usuario.codigo in p.integrantes | map(attribute='codigo') %}
+            {% set mi_proyecto = p %}
+        {% endif %}
+    {% endfor %}
+
+    {% if mi_proyecto %}
+        <h3 class="mt-4">Tu proyecto actual</h3>
+        <div class="card mb-3 {% if mi_proyecto.integrantes | length >= mi_proyecto.max_integrantes %}border-success{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">{{ mi_proyecto.nombre }}</h5>
+                <p class="card-text">{{ mi_proyecto.descripcion }}</p>
+                <p class="card-text">
+                    <strong>Integrantes:</strong> {{ mi_proyecto.integrantes | length }}/{{ mi_proyecto.max_integrantes }}
+                    {% if mi_proyecto.integrantes | length >= mi_proyecto.max_integrantes %}
+                        <span class="badge bg-success ms-2">Proyecto Completo</span>
+                    {% endif %}
+                </p>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for integrante in mi_proyecto.integrantes %}
+                        <li class="list-group-item">
+                            👤 {{ integrante.nombre }} - {{ integrante.carrera }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p class="card-text"><strong>Carreras necesarias:</strong> {{ mi_proyecto.carreras_necesarias | join(', ') }}</p>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
