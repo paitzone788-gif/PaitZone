@@ -27,10 +27,20 @@
       <label for="codigo" class="form-label">Código de estudiante</label>
       <input type="text" class="form-control" id="codigo" name="codigo" required />
     </div>
-    <div class="mb-3">
-      <label for="carrera" class="form-label">Carrera</label>
-      <input type="text" class="form-control" id="carrera" name="carrera" required />
-    </div>
+<div class="mb-3">
+  <label for="carrera" class="form-label">Carrera</label>
+  <select class="form-select" id="carrera" name="carrera" required>
+    <option value="" disabled selected>Selecciona tu carrera</option>
+    <option value="Administración">Administración</option>
+    <option value="Gestión aduanal">Gestión aduanal</option>
+    <option value="Biotecnología">Biotecnología</option>
+    <option value="Energías alternativas">Energías alternativas</option>
+    <option value="Telecomunicaciones">Telecomunicaciones</option>
+    <option value="Informática">Informática</option>
+    <option value="Procesos de manufactura competitiva">Procesos de manufactura competitiva</option>
+  </select>
+</div>
+
     <div class="mb-3">
       <label for="correo" class="form-label">Correo electrónico</label>
       <input type="email" class="form-control" id="correo" name="correo" />

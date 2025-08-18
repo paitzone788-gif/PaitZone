@@ -1,0 +1,7 @@
+  {% if not ya_tiene_proyecto %}
+                    <a href="{{ url_for('create_project') }}" class="btn btn-success me-2">Equipos creados</a>
+                {% endif %}
+
+                  {% if not ya_tiene_proyecto %}
+                    <a href="{{ url_for('create_project') }}" class="btn btn-success me-2">Equipos en los que estoy</a>
+                {% endif %}
