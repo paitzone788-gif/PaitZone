@@ -1,57 +1,120 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_mysqldb import MySQL
+
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
-usuarios = []
-proyectos = []  # Aquí se guardan los proyectos creados
+# Configuración MySQL
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'mysql'
+app.config['MYSQL_DB'] = 'Entrelaza'
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
+mysql = MySQL(app)
+
+# Página de inicio -> muestra equipos
 @app.route('/')
 def index():
+    cursor = mysql.connection.cursor()
+    
     usuario = session.get('usuario')
-    carrera_usuario = usuario['carrera'] if usuario else None
-    codigo_usuario = usuario['codigo'] if usuario else None
 
-    # Equipos a mostrar según la carrera
-    equipos_filtrados = []
-    for e in proyectos:
-        if carrera_usuario in e['carreras_necesarias']:
-            equipos_filtrados.append(e)
+    # Traer todos los equipos disponibles de la misma carrera que el usuario
+    if usuario:
+        cursor.execute('''
+            SELECT e.* FROM equipos e
+            JOIN equipo_carreras ec ON e.id = ec.equipo_id
+            JOIN carreras c ON ec.carrera_id = c.id
+            WHERE c.nombre = %s
+        ''', (usuario['carrera'],))
+    else:
+        cursor.execute('SELECT * FROM equipos')
+    
+    equipos = cursor.fetchall()
 
-    return render_template("project.html", equipos=equipos_filtrados, usuario=usuario)
+    for equipo in equipos:
+        cursor.execute('''
+            SELECT u.id, u.nombre_completo, u.carrera 
+            FROM equipo_integrantes ei
+            JOIN usuarios u ON ei.usuario_id = u.id
+            WHERE ei.equipo_id = %s
+        ''', (equipo['id'],))
+        equipo['integrantes'] = cursor.fetchall()
 
+        cursor.execute('''
+            SELECT c.nombre
+            FROM equipo_carreras ec
+            JOIN carreras c ON ec.carrera_id = c.id
+            WHERE ec.equipo_id = %s
+        ''', (equipo['id'],))
+        equipo['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
+
+    # Verificar si el usuario ya tiene un proyecto
+    mi_proyecto = None
+    if usuario:
+        cursor.execute('''
+            SELECT e.* FROM equipos e
+            JOIN equipo_integrantes ei ON e.id = ei.equipo_id
+            WHERE ei.usuario_id = %s
+            LIMIT 1
+        ''', (usuario['id'],))
+        mi_proyecto = cursor.fetchone()
+
+    cursor.close()
+    return render_template("project.html", equipos=equipos, usuario=usuario, mi_proyecto=mi_proyecto)
+
+
+# Registro de usuario
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        datos = {
-            "nombre": request.form['nombre'],
-            "codigo": request.form['codigo'],
-            "carrera": request.form['carrera'],
-            "correo": request.form['correo'],
-            "telefono": request.form['telefono'],
-            "password": request.form['password']
-        }
+        nombre = request.form['nombre']
+        carrera = request.form['carrera']
+        codigo = request.form['codigo']
+        correo = request.form['correo']
+        telefono = request.form['telefono']
+        password = request.form['password']
 
-        if any(u['codigo'] == datos['codigo'] for u in usuarios):
-            flash("El código ya está registrado", "danger")
+        if not correo.endswith("@alumnos.udg.mx"):
+            flash("Debes usar tu correo institucional (@alumnos.udg.mx)", "danger")
             return redirect(url_for('register'))
 
-        usuarios.append(datos)
-        flash("Registro exitoso", "success")
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT * FROM usuarios WHERE codigo = %s OR correo = %s", (codigo, correo))
+        if cursor.fetchone():
+            flash("Ya existe un usuario con ese código o correo", "danger")
+            cursor.close()
+            return redirect(url_for('register'))
+
+        cursor.execute('''
+            INSERT INTO usuarios(nombre_completo, carrera, codigo, correo, telefono, contrasena)
+            VALUES (%s,%s,%s,%s,%s,%s)
+        ''', (nombre, carrera, codigo, correo, telefono, password))
+        mysql.connection.commit()
+        cursor.close()
+        flash("Registro exitoso, ahora inicia sesión", "success")
         return redirect(url_for('login'))
 
     return render_template("register.html")
 
+
+# Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         codigo = request.form['codigo']
         password = request.form['password']
 
-        user = next((u for u in usuarios if u['codigo'] == codigo and u['password'] == password), None)
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT * FROM usuarios WHERE codigo = %s AND contrasena = %s', (codigo, password))
+        user = cursor.fetchone()
+        cursor.close()
+
         if user:
             session['usuario'] = user
-            flash(f"Bienvenido, {user['nombre']}", "success")
+            flash(f"Bienvenido, {user['nombre_completo']}", "success")
             return redirect(url_for('index'))
         else:
             flash("Código o contraseña incorrectos", "danger")
@@ -59,40 +122,64 @@ def login():
 
     return render_template("login.html")
 
+
+# Mostrar proyecto del usuario
+@app.route('/mi_equipo')
+def mi_equipo():
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión para ver tu proyecto", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+
+    # Buscar proyecto del usuario
+    cursor.execute('''
+        SELECT e.id, e.nombre_proyecto, e.descripcion, e.max_integrantes
+        FROM equipos e
+        JOIN equipo_integrantes ei ON e.id = ei.equipo_id
+        WHERE ei.usuario_id = %s
+        LIMIT 1
+    ''', (usuario['id'],))
+    equipo = cursor.fetchone()
+
+    if not equipo:
+        flash("No perteneces a ningún proyecto aún", "info")
+        cursor.close()
+        return redirect(url_for('index'))
+
+    # Integrantes del equipo
+    cursor.execute('''
+        SELECT u.nombre_completo AS nombre, u.carrera
+        FROM equipo_integrantes ei
+        JOIN usuarios u ON ei.usuario_id = u.id
+        WHERE ei.equipo_id = %s
+    ''', (equipo['id'],))
+    equipo['integrantes'] = cursor.fetchall()
+
+    # Carreras necesarias
+    cursor.execute('''
+        SELECT c.nombre
+        FROM equipo_carreras ec
+        JOIN carreras c ON ec.carrera_id = c.id
+        WHERE ec.equipo_id = %s
+    ''', (equipo['id'],))
+    equipo['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
+
+    cursor.close()
+    return render_template('mi_equipo.html', usuario=usuario, equipo=equipo)
+
+
+# Logout
 @app.route('/logout')
 def logout():
     session.pop('usuario', None)
     flash("Sesión cerrada", "info")
     return redirect(url_for('index'))
 
-@app.route('/unirse/<int:equipo_id>')
-def unirse(equipo_id):
-    if 'usuario' not in session:
-        flash("Debes iniciar sesión para unirte a un equipo", "warning")
-        return redirect(url_for('login'))
 
-    usuario = session['usuario']
-    codigo_usuario = usuario['codigo']
-
-    # Verificar si ya pertenece a algún proyecto
-    for proyecto in proyectos:
-        if any(i['codigo'] == codigo_usuario for i in proyecto['integrantes']):
-            flash("Ya perteneces a un proyecto y no puedes unirte a otro", "danger")
-            return redirect(url_for('index'))
-
-    # Buscar el proyecto
-    proyecto = next((p for p in proyectos if p['id'] == equipo_id), None)
-    if proyecto:
-        if len(proyecto['integrantes']) >= proyecto['max_integrantes']:
-            flash("Este equipo ya está completo", "warning")
-        else:
-            proyecto['integrantes'].append(usuario)
-            flash("Te has unido al equipo exitosamente", "success")
-    else:
-        flash("Equipo no encontrado", "danger")
-
-    return redirect(url_for('index'))
-
+# Crear proyecto
+# Crear proyecto
 @app.route('/create_project', methods=['GET', 'POST'])
 def create_project():
     if 'usuario' not in session:
@@ -100,34 +187,125 @@ def create_project():
         return redirect(url_for('login'))
 
     usuario = session['usuario']
+    cursor = mysql.connection.cursor()
 
-    # Verificar si ya pertenece a un proyecto
-    for p in proyectos:
-        if any(i['codigo'] == usuario['codigo'] for i in p['integrantes']):
-            flash("Ya perteneces a un proyecto. No puedes crear otro.", "danger")
-            return redirect(url_for('index'))
+    # Verificar que el usuario exista
+    cursor.execute("SELECT id FROM usuarios WHERE id=%s", (usuario['id'],))
+    if not cursor.fetchone():
+        flash("Usuario no válido", "danger")
+        cursor.close()
+        return redirect(url_for('index'))
+
+    # Verificar que no haya creado ya un equipo
+    cursor.execute('SELECT * FROM equipos WHERE creador_id = %s', (usuario['id'],))
+    if cursor.fetchone():
+        flash("Ya creaste un equipo, no puedes crear otro", "danger")
+        cursor.close()
+        return redirect(url_for('index'))
 
     if request.method == 'POST':
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
         max_integrantes = int(request.form['max_integrantes'])
-        carreras_necesarias = request.form.getlist('carreras')
+        integrantes_raw = request.form['integrantes']
+        carreras_seleccionadas = request.form.getlist('carreras')
 
-        nuevo_proyecto = {
-            'id': len(proyectos) + 1,
-            'nombre': nombre,
-            'descripcion': descripcion,
-            'max_integrantes': max_integrantes,
-            'integrantes': [usuario],
-            'carreras_necesarias': carreras_necesarias
-        }
+        # Limitar el número de carreras al máximo permitido
+        max_carreras = min(4, max_integrantes)
+        carreras_seleccionadas = carreras_seleccionadas[:max_carreras]
 
-        proyectos.append(nuevo_proyecto)
-        flash('Proyecto creado con éxito', 'success')
+        # Crear el equipo
+        cursor.execute(
+            "INSERT INTO equipos (nombre_proyecto, descripcion, max_integrantes, creador_id) VALUES (%s,%s,%s,%s)",
+            (nombre, descripcion, max_integrantes, usuario['id'])
+        )
+        equipo_id = cursor.lastrowid
+
+        # Insertar al creador del equipo
+        cursor.execute(
+            "INSERT INTO equipo_integrantes (equipo_id, usuario_id) VALUES (%s, %s)",
+            (equipo_id, usuario['id'])
+        )
+
+        # Insertar otros integrantes, evitando duplicados
+        integrantes = [i.strip() for i in integrantes_raw.split(',') if i.strip()]
+        for integrante_nombre in integrantes:
+            if integrante_nombre == usuario['nombre_completo']:
+                continue  # evitar duplicar al creador
+
+            # Verificar si el usuario ya está en el equipo
+            cursor.execute(
+                "SELECT * FROM equipo_integrantes WHERE equipo_id=%s AND usuario_id=(SELECT id FROM usuarios WHERE nombre_completo=%s LIMIT 1)",
+                (equipo_id, integrante_nombre)
+            )
+            if not cursor.fetchone():
+                cursor.execute(
+                    "INSERT INTO equipo_integrantes (equipo_id, usuario_id) "
+                    "SELECT %s, id FROM usuarios WHERE nombre_completo=%s LIMIT 1",
+                    (equipo_id, integrante_nombre)
+                )
+
+        # Insertar las carreras asociadas
+        for carrera_nombre in carreras_seleccionadas:
+            cursor.execute("SELECT id FROM carreras WHERE nombre=%s", (carrera_nombre,))
+            carrera_row = cursor.fetchone()
+            if carrera_row:
+                carrera_id = carrera_row['id']
+                cursor.execute(
+                    "INSERT INTO equipo_carreras (equipo_id, carrera_id) VALUES (%s,%s)",
+                    (equipo_id, carrera_id)
+                )
+
+        mysql.connection.commit()
+        cursor.close()
+        flash("¡Creaste tu equipo!", "success")
         return redirect(url_for('index'))
 
-    carreras_disponibles = ['TPIN', 'BTGO', 'CARRERA3', 'CARRERA4']
-    return render_template('create_project.html', carreras=carreras_disponibles)
+    # Traer todas las carreras para el formulario
+    cursor.execute("SELECT nombre FROM carreras")
+    carreras = [row['nombre'] for row in cursor.fetchall()]
+    cursor.close()
+    return render_template("create_project.html", carreras=carreras)
+
+
+
+# Unirse a proyecto
+@app.route('/unirse/<int:equipo_id>')
+def unirse(equipo_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión para unirte a un equipo", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT * FROM equipo_integrantes WHERE usuario_id = %s', (usuario['id'],))
+    if cursor.fetchone():
+        flash("Ya perteneces a un equipo y no puedes unirte a otro", "danger")
+        cursor.close()
+        return redirect(url_for('index'))
+
+    cursor.execute('INSERT INTO equipo_integrantes(equipo_id, usuario_id) VALUES (%s, %s)', (equipo_id, usuario['id']))
+    mysql.connection.commit()
+    cursor.close()
+    flash("¡Te uniste a un equipo!", "success")
+    return redirect(url_for('index'))
+
+
+# Salir de equipo
+@app.route('/salir/<int:equipo_id>')
+def salir(equipo_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+    cursor.execute('DELETE FROM equipo_integrantes WHERE equipo_id = %s AND usuario_id = %s', (equipo_id, usuario['id']))
+    mysql.connection.commit()
+    cursor.close()
+    flash("Has salido del equipo", "info")
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
