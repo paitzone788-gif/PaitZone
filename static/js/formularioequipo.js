@@ -21,13 +21,11 @@
 
 
     // Cerrar automáticamente los flashes después de 5 segundos
-    window.addEventListener('DOMContentLoaded', (event) => {
-        const alerts = document.querySelectorAll('#flash-messages .alert');
-        alerts.forEach(alert => {
-            setTimeout(() => {
-                alert.classList.remove('show');
-                alert.classList.add('hide');
-            }, 5000);
-        });
-    });
+ setTimeout(() => {
+  msg.style.transition = "all 1s ease";
+  msg.style.opacity = "0";
+  msg.style.transform = "translateY(-20px)";
+  setTimeout(() => msg.remove(), 1000);
+}, 3000);
+
 

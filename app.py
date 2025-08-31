@@ -1,6 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
+from functools import wraps
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'usuario' not in session:
+            flash("Debes iniciar sesión", "warning")
+            return redirect(url_for('login'))
+        if session['usuario'].get('role') != 'admin':
+            flash("No tienes permisos para acceder aquí", "danger")
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -65,6 +77,77 @@ def index():
     cursor.close()
     return render_template("project.html", equipos=equipos, usuario=usuario, mi_proyecto=mi_proyecto)
 
+# ruta admin
+@app.route('/admin')
+@admin_required
+def admin_panel():
+    return render_template('admin.html')
+
+# tabla de usuarios
+@app.route('/admin/usuarios')
+@admin_required
+def admin_usuarios():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM usuarios")
+    usuarios = cursor.fetchall()
+    cursor.close()
+    return render_template('admin_usuarios.html', usuarios=usuarios)
+
+# tabla de equipos
+@app.route('/admin/equipos')
+@admin_required
+def admin_equipos():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM equipos")
+    equipos = cursor.fetchall()
+    cursor.close()
+    return render_template('admin_equipos.html', equipos=equipos)
+
+# borrar usuarios o equipos
+@app.route('/admin/borrar_usuario/<int:id>', methods=['POST'])
+@admin_required
+def borrar_usuario(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id=%s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    flash("Usuario eliminado", "success")
+    return redirect(url_for('admin_usuarios'))
+
+@app.route('/admin/borrar_equipo/<int:id>', methods=['POST'])
+@admin_required
+def borrar_equipo(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM equipos WHERE id=%s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    flash("Equipo eliminado", "success")
+    return redirect(url_for('admin_equipos'))
+
+# agregar usuario en admin
+@app.route('/admin/agregar_usuario', methods=['GET','POST'])
+@admin_required
+def agregar_usuario():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        carrera = request.form['carrera']
+        codigo = request.form['codigo']
+        correo = request.form['correo']
+        telefono = request.form['telefono']
+        contrasena = request.form['contrasena']
+        role = request.form.get('role', 'user')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''INSERT INTO usuarios(nombre_completo, carrera, codigo, correo, telefono, contrasena, role)
+                          VALUES (%s,%s,%s,%s,%s,%s,%s)''', 
+                       (nombre, carrera, codigo, correo, telefono, contrasena, role))
+        mysql.connection.commit()
+        cursor.close()
+        flash("Usuario agregado", "success")
+        return redirect(url_for('admin_usuarios'))
+
+    return render_template('agregar_usuario.html')
+
 
 # Registro de usuario
 @app.route('/register', methods=['GET', 'POST'])
@@ -113,15 +196,53 @@ def login():
         cursor.close()
 
         if user:
-            session['usuario'] = user
+            # Guardar en sesión incluyendo el role
+            session['usuario'] = {
+                'id': user['id'],
+                'nombre_completo': user['nombre_completo'],
+                'carrera': user['carrera'],
+                'codigo': user['codigo'],
+                'correo': user['correo'],
+                'telefono': user.get('telefono'),
+                'role': user.get('role', 'user')  # por si no tiene role definido
+            }
+
             flash(f"Bienvenido, {user['nombre_completo']}", "success")
-            return redirect(url_for('index'))
+
+            # Redirigir según rol
+            if session['usuario']['role'] == 'admin':
+                return redirect(url_for('admin_panel'))  # ruta de admin
+            else:
+                return redirect(url_for('index'))  # usuario normal
+
         else:
             flash("Código o contraseña incorrectos", "danger")
             return redirect(url_for('login'))
 
     return render_template("login.html")
 
+# agregar equipo admin
+@app.route('/admin/agregar_equipo', methods=['GET', 'POST'])
+@admin_required
+def agregar_equipo():
+    cursor = mysql.connection.cursor()
+
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        descripcion = request.form['descripcion']
+        max_integrantes = int(request.form['max_integrantes'])
+        cursor.execute("INSERT INTO equipos(nombre_proyecto, descripcion, max_integrantes, creador_id) VALUES (%s,%s,%s,%s)",
+                       (nombre, descripcion, max_integrantes, session['usuario']['id']))
+        mysql.connection.commit()
+        cursor.close()
+        flash("Equipo agregado", "success")
+        return redirect(url_for('admin_equipos'))
+
+    # Para seleccionar carreras asociadas (opcional)
+    cursor.execute("SELECT nombre FROM carreras")
+    carreras = [row['nombre'] for row in cursor.fetchall()]
+    cursor.close()
+    return render_template('agregar_equipo.html', carreras=carreras)
 
 # Mostrar proyecto del usuario
 @app.route('/mi_equipo')
