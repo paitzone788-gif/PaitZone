@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from functools import wraps
-
+from werkzeug.security import generate_password_hash
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -30,25 +30,47 @@ mysql = MySQL(app)
 @app.route('/')
 def index():
     cursor = mysql.connection.cursor()
-    
     usuario = session.get('usuario')
 
-    # Traer todos los equipos disponibles de la misma carrera que el usuario
     if usuario:
+        # Solo equipos que necesiten la carrera del usuario
         cursor.execute('''
-            SELECT e.* FROM equipos e
+            SELECT DISTINCT e.*, 
+                   (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
+            FROM equipos e
             JOIN equipo_carreras ec ON e.id = ec.equipo_id
             JOIN carreras c ON ec.carrera_id = c.id
             WHERE c.nombre = %s
         ''', (usuario['carrera'],))
     else:
-        cursor.execute('SELECT * FROM equipos')
-    
+        # Visitante ve todos
+        cursor.execute('''
+            SELECT e.*, 
+                   (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
+            FROM equipos e
+        ''')
+
     equipos = cursor.fetchall()
 
+    # Filtrar equipos que no estén llenos (o que ya tenga el usuario dentro)
+    filtrados = []
+    if usuario:
+        for eq in equipos:
+            cursor.execute(
+                'SELECT 1 FROM equipo_integrantes WHERE equipo_id = %s AND usuario_id = %s',
+                (eq['id'], usuario['id'])
+            )
+            pertenece = cursor.fetchone()
+            if eq['integrantes_actuales'] < eq['max_integrantes'] or pertenece:
+                filtrados.append(eq)
+        equipos = filtrados
+    else:
+        equipos = [eq for eq in equipos if eq['integrantes_actuales'] < eq['max_integrantes']]
+
+    # Agregar integrantes y carreras necesarias a cada equipo
     for equipo in equipos:
         cursor.execute('''
-            SELECT u.id, u.nombre_completo, u.carrera 
+            SELECT u.id, u.nombre_completo, u.carrera, u.grado, u.grupo
             FROM equipo_integrantes ei
             JOIN usuarios u ON ei.usuario_id = u.id
             WHERE ei.equipo_id = %s
@@ -74,14 +96,42 @@ def index():
         ''', (usuario['id'],))
         mi_proyecto = cursor.fetchone()
 
+        if mi_proyecto:
+            cursor.execute('''
+                SELECT u.id, u.nombre_completo, u.carrera, u.grado, u.grupo
+                FROM equipo_integrantes ei
+                JOIN usuarios u ON ei.usuario_id = u.id
+                WHERE ei.equipo_id = %s
+            ''', (mi_proyecto['id'],))
+            mi_proyecto['integrantes'] = cursor.fetchall()
+
+            cursor.execute('''
+                SELECT c.nombre
+                FROM equipo_carreras ec
+                JOIN carreras c ON ec.carrera_id = c.id
+                WHERE ec.equipo_id = %s
+            ''', (mi_proyecto['id'],))
+            mi_proyecto['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
+
     cursor.close()
     return render_template("project.html", equipos=equipos, usuario=usuario, mi_proyecto=mi_proyecto)
+
+
+
+
 
 # ruta admin
 @app.route('/admin')
 @admin_required
 def admin_panel():
-    return render_template('admin.html')
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT nombre FROM carreras")
+    carreras = [row['nombre'] for row in cursor.fetchall()]
+    cursor.close()
+    return render_template('admin.html', carreras=carreras)
+
+
+
 
 # tabla de usuarios
 @app.route('/admin/usuarios')
@@ -108,8 +158,26 @@ def admin_equipos():
 @admin_required
 def borrar_usuario(id):
     cursor = mysql.connection.cursor()
+    
+    # Antes de borrar al usuario, obtenemos los equipos donde está
+    cursor.execute('SELECT equipo_id FROM equipo_integrantes WHERE usuario_id = %s', (id,))
+    equipos = [row['equipo_id'] for row in cursor.fetchall()]
+    
+    # Borrar al usuario
     cursor.execute("DELETE FROM usuarios WHERE id=%s", (id,))
     mysql.connection.commit()
+    
+    # Revisar si alguno de los equipos quedó vacío
+    for equipo_id in equipos:
+        cursor.execute('SELECT COUNT(*) AS total FROM equipo_integrantes WHERE equipo_id = %s', (equipo_id,))
+        resultado = cursor.fetchone()
+        if resultado['total'] == 0:
+            # Borrar equipo y sus carreras asociadas
+            cursor.execute('DELETE FROM equipo_carreras WHERE equipo_id = %s', (equipo_id,))
+            cursor.execute('DELETE FROM equipos WHERE id = %s', (equipo_id,))
+            mysql.connection.commit()
+            flash(f"El equipo {equipo_id} quedó vacío y fue eliminado automáticamente", "info")
+    
     cursor.close()
     flash("Usuario eliminado", "success")
     return redirect(url_for('admin_usuarios'))
@@ -125,41 +193,56 @@ def borrar_equipo(id):
     return redirect(url_for('admin_equipos'))
 
 # agregar usuario en admin
-@app.route('/admin/agregar_usuario', methods=['GET','POST'])
+@app.route('/admin/agregar_usuario', methods=['GET', 'POST'])
 @admin_required
 def agregar_usuario():
     if request.method == 'POST':
         nombre = request.form['nombre']
         carrera = request.form['carrera']
+        grado = request.form['grado']      # NUEVO
+        grupo = request.form['grupo']      # NUEVO
         codigo = request.form['codigo']
         correo = request.form['correo']
-        telefono = request.form['telefono']
+        telefono = request.form['telefono']  # NUEVO
         contrasena = request.form['contrasena']
         role = request.form.get('role', 'user')
 
+        # 🔑 Hashear la contraseña antes de guardarla
+        hashed_password = generate_password_hash(contrasena, method='pbkdf2:sha256')
+
         cursor = mysql.connection.cursor()
-        cursor.execute('''INSERT INTO usuarios(nombre_completo, carrera, codigo, correo, telefono, contrasena, role)
-                          VALUES (%s,%s,%s,%s,%s,%s,%s)''', 
-                       (nombre, carrera, codigo, correo, telefono, contrasena, role))
+        cursor.execute('''
+            INSERT INTO usuarios(nombre_completo, carrera, grado, grupo, codigo, correo, telefono, contrasena, role)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        ''', (nombre, carrera, grado, grupo, codigo, correo, telefono, hashed_password, role))
         mysql.connection.commit()
         cursor.close()
-        flash("Usuario agregado", "success")
+
+        flash("Usuario agregado correctamente", "success")
         return redirect(url_for('admin_usuarios'))
 
     return render_template('agregar_usuario.html')
 
 
+
 # Registro de usuario
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """
+    Registro de usuario.
+    Incluye grado, grupo y teléfono.
+    Verifica correo institucional y evita duplicados.
+    """
     if request.method == 'POST':
         nombre = request.form['nombre']
         carrera = request.form['carrera']
+        grado = request.form['grado']        # NUEVO
+        grupo = request.form['grupo']        # NUEVO
         codigo = request.form['codigo']
         correo = request.form['correo']
-        telefono = request.form['telefono']
+        telefono = request.form['telefono']  # NUEVO
         password = request.form['password']
-
+        
         if not correo.endswith("@alumnos.udg.mx"):
             flash("Debes usar tu correo institucional (@alumnos.udg.mx)", "danger")
             return redirect(url_for('register'))
@@ -171,10 +254,15 @@ def register():
             cursor.close()
             return redirect(url_for('register'))
 
+        # Hashear la contraseña
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+        # Insertar usuario con teléfono, grado y grupo
         cursor.execute('''
-            INSERT INTO usuarios(nombre_completo, carrera, codigo, correo, telefono, contrasena)
-            VALUES (%s,%s,%s,%s,%s,%s)
-        ''', (nombre, carrera, codigo, correo, telefono, password))
+            INSERT INTO usuarios(nombre_completo, carrera, grado, grupo, codigo, correo, telefono, contrasena)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        ''', (nombre, carrera, grado, grupo, codigo, correo, telefono, hashed_password))
+
         mysql.connection.commit()
         cursor.close()
         flash("Registro exitoso, ahora inicia sesión", "success")
@@ -183,43 +271,52 @@ def register():
     return render_template("register.html")
 
 
+
+
+# Login
 # Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Login de usuario.
+    Guarda en sesión id, nombre, carrera, grado, grupo, código, correo, teléfono y rol.
+    """
     if request.method == 'POST':
         codigo = request.form['codigo']
         password = request.form['password']
 
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM usuarios WHERE codigo = %s AND contrasena = %s', (codigo, password))
+        cursor.execute('SELECT * FROM usuarios WHERE codigo = %s', (codigo,))
         user = cursor.fetchone()
         cursor.close()
 
-        if user:
-            # Guardar en sesión incluyendo el role
+        from werkzeug.security import check_password_hash
+        if user and check_password_hash(user['contrasena'], password):
+            # Guardar en sesión incluyendo grado, grupo y teléfono
             session['usuario'] = {
                 'id': user['id'],
                 'nombre_completo': user['nombre_completo'],
                 'carrera': user['carrera'],
+                'grado': user.get('grado'),
+                'grupo': user.get('grupo'),
                 'codigo': user['codigo'],
                 'correo': user['correo'],
                 'telefono': user.get('telefono'),
-                'role': user.get('role', 'user')  # por si no tiene role definido
+                'role': user.get('role', 'user')
             }
 
             flash(f"Bienvenido, {user['nombre_completo']}", "success")
 
-            # Redirigir según rol
             if session['usuario']['role'] == 'admin':
-                return redirect(url_for('admin_panel'))  # ruta de admin
+                return redirect(url_for('admin_panel'))
             else:
-                return redirect(url_for('index'))  # usuario normal
-
+                return redirect(url_for('index'))
         else:
             flash("Código o contraseña incorrectos", "danger")
             return redirect(url_for('login'))
 
     return render_template("login.html")
+
 
 # agregar equipo admin
 @app.route('/admin/agregar_equipo', methods=['GET', 'POST'])
@@ -231,18 +328,54 @@ def agregar_equipo():
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
         max_integrantes = int(request.form['max_integrantes'])
-        cursor.execute("INSERT INTO equipos(nombre_proyecto, descripcion, max_integrantes, creador_id) VALUES (%s,%s,%s,%s)",
-                       (nombre, descripcion, max_integrantes, session['usuario']['id']))
+        integrantes_raw = request.form.get('integrantes', '')
+        carreras_seleccionadas = request.form.getlist('carreras')
+
+        # Insertar equipo
+        cursor.execute(
+            "INSERT INTO equipos(nombre_proyecto, descripcion, max_integrantes, creador_id) VALUES (%s,%s,%s,%s)",
+            (nombre, descripcion, max_integrantes, session['usuario']['id'])
+        )
+        equipo_id = cursor.lastrowid
+
+        # Insertar integrantes, evitando duplicar al creador
+        cursor.execute(
+            "INSERT INTO equipo_integrantes (equipo_id, usuario_id) VALUES (%s, %s)",
+            (equipo_id, session['usuario']['id'])
+        )
+
+        integrantes = [i.strip() for i in integrantes_raw.split(',') if i.strip()]
+        for integrante_nombre in integrantes:
+            if integrante_nombre == session['usuario']['nombre_completo']:
+                continue
+            # Insertar solo si existe el usuario
+            cursor.execute(
+                "INSERT INTO equipo_integrantes (equipo_id, usuario_id) "
+                "SELECT %s, id FROM usuarios WHERE nombre_completo=%s LIMIT 1",
+                (equipo_id, integrante_nombre)
+            )
+
+        # Insertar carreras asociadas
+        for carrera_nombre in carreras_seleccionadas[:4]:  # máximo 4
+            cursor.execute("SELECT id FROM carreras WHERE nombre=%s", (carrera_nombre,))
+            carrera_row = cursor.fetchone()
+            if carrera_row:
+                cursor.execute(
+                    "INSERT INTO equipo_carreras (equipo_id, carrera_id) VALUES (%s,%s)",
+                    (equipo_id, carrera_row['id'])
+                )
+
         mysql.connection.commit()
         cursor.close()
         flash("Equipo agregado", "success")
         return redirect(url_for('admin_equipos'))
 
-    # Para seleccionar carreras asociadas (opcional)
+    # GET: mostrar formulario con carreras
     cursor.execute("SELECT nombre FROM carreras")
     carreras = [row['nombre'] for row in cursor.fetchall()]
     cursor.close()
     return render_template('agregar_equipo.html', carreras=carreras)
+
 
 # Mostrar proyecto del usuario
 @app.route('/mi_equipo')
@@ -269,9 +402,13 @@ def mi_equipo():
         cursor.close()
         return redirect(url_for('index'))
 
-    # Integrantes del equipo
+    # Integrantes del equipo con grado y grupo incluidos
     cursor.execute('''
-        SELECT u.nombre_completo AS nombre, u.carrera
+        SELECT u.nombre_completo AS nombre_completo,
+               u.carrera,
+               u.telefono,
+               u.grado,
+               u.grupo
         FROM equipo_integrantes ei
         JOIN usuarios u ON ei.usuario_id = u.id
         WHERE ei.equipo_id = %s
@@ -291,11 +428,13 @@ def mi_equipo():
     return render_template('mi_equipo.html', usuario=usuario, equipo=equipo)
 
 
+
 # Logout
 @app.route('/logout')
 def logout():
     session.pop('usuario', None)
     flash("Sesión cerrada", "info")
+    flash("Has iniciado sesión correctamente", "success")
     return redirect(url_for('index'))
 
 
@@ -332,7 +471,7 @@ def create_project():
         carreras_seleccionadas = request.form.getlist('carreras')
 
         # Limitar el número de carreras al máximo permitido
-        max_carreras = min(4, max_integrantes)
+        max_carreras = min(4, len(carreras_seleccionadas))
         carreras_seleccionadas = carreras_seleccionadas[:max_carreras]
 
         # Crear el equipo
@@ -353,28 +492,22 @@ def create_project():
         for integrante_nombre in integrantes:
             if integrante_nombre == usuario['nombre_completo']:
                 continue  # evitar duplicar al creador
-
-            # Verificar si el usuario ya está en el equipo
             cursor.execute(
-                "SELECT * FROM equipo_integrantes WHERE equipo_id=%s AND usuario_id=(SELECT id FROM usuarios WHERE nombre_completo=%s LIMIT 1)",
+                "INSERT INTO equipo_integrantes (equipo_id, usuario_id) "
+                "SELECT %s, id FROM usuarios WHERE nombre_completo=%s LIMIT 1",
                 (equipo_id, integrante_nombre)
             )
-            if not cursor.fetchone():
-                cursor.execute(
-                    "INSERT INTO equipo_integrantes (equipo_id, usuario_id) "
-                    "SELECT %s, id FROM usuarios WHERE nombre_completo=%s LIMIT 1",
-                    (equipo_id, integrante_nombre)
-                )
 
-        # Insertar las carreras asociadas
+        # Insertar las carreras asociadas con cantidad
         for carrera_nombre in carreras_seleccionadas:
             cursor.execute("SELECT id FROM carreras WHERE nombre=%s", (carrera_nombre,))
             carrera_row = cursor.fetchone()
             if carrera_row:
                 carrera_id = carrera_row['id']
+                cantidad = int(request.form.get(f'cantidad_{carrera_nombre}', 0))
                 cursor.execute(
-                    "INSERT INTO equipo_carreras (equipo_id, carrera_id) VALUES (%s,%s)",
-                    (equipo_id, carrera_id)
+                    "INSERT INTO equipo_carreras (equipo_id, carrera_id, cantidad) VALUES (%s,%s,%s)",
+                    (equipo_id, carrera_id, cantidad)
                 )
 
         mysql.connection.commit()
@@ -387,6 +520,7 @@ def create_project():
     carreras = [row['nombre'] for row in cursor.fetchall()]
     cursor.close()
     return render_template("create_project.html", carreras=carreras)
+
 
 
 
@@ -412,6 +546,17 @@ def unirse(equipo_id):
     return redirect(url_for('index'))
 
 
+# Equipos disponibles
+@app.route('/equipos_disponibles')
+def equipos_disponibles():
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión para ver los equipos", "warning")
+        return redirect(url_for('login'))
+    usuario = session['usuario']
+    # Aquí va tu lógica para filtrar equipos según la carrera del usuario
+    # ...
+    return render_template('equipos_disponibles.html', usuario=usuario, equipos=equipos)
+
 # Salir de equipo
 @app.route('/salir/<int:equipo_id>')
 def salir(equipo_id):
@@ -421,10 +566,31 @@ def salir(equipo_id):
 
     usuario = session['usuario']
     cursor = mysql.connection.cursor()
-    cursor.execute('DELETE FROM equipo_integrantes WHERE equipo_id = %s AND usuario_id = %s', (equipo_id, usuario['id']))
+    
+    # Eliminar al usuario del equipo
+    cursor.execute(
+        'DELETE FROM equipo_integrantes WHERE equipo_id = %s AND usuario_id = %s',
+        (equipo_id, usuario['id'])
+    )
     mysql.connection.commit()
+
+    # Verificar si quedan integrantes en el equipo
+    cursor.execute(
+        'SELECT COUNT(*) AS total FROM equipo_integrantes WHERE equipo_id = %s',
+        (equipo_id,)
+    )
+    resultado = cursor.fetchone()
+    
+    if resultado['total'] == 0:
+        # Borrar equipo y sus carreras asociadas
+        cursor.execute('DELETE FROM equipo_carreras WHERE equipo_id = %s', (equipo_id,))
+        cursor.execute('DELETE FROM equipos WHERE id = %s', (equipo_id,))
+        mysql.connection.commit()
+        flash("El equipo quedo vacío y fue eliminado automáticamente", "info")
+    else:
+        flash("Has salido del equipo", "info")
+    
     cursor.close()
-    flash("Has salido del equipo", "info")
     return redirect(url_for('index'))
 
 

@@ -1,62 +1,7 @@
- <!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Botón para abrir modal -->
-<button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#agregarUsuarioModal">
-  + Agregar Usuario
-</button>
-
-<!-- Modal flotante para agregar usuario -->
-<div class="modal fade" id="agregarUsuarioModal" tabindex="-1" aria-labelledby="agregarUsuarioLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="{{ url_for('agregar_usuario') }}">
-        <div class="modal-header bg-success text-white">
-          <h5 class="modal-title" id="agregarUsuarioLabel">Agregar Usuario</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="nombre" class="form-label">Nombre completo</label>
-            <input type="text" class="form-control" id="nombre" name="nombre" required>
-          </div>
-          <div class="mb-3">
-            <label for="carrera" class="form-label">Carrera</label>
-            <input type="text" class="form-control" id="carrera" name="carrera" required>
-          </div>
-          <div class="mb-3">
-            <label for="codigo" class="form-label">Código</label>
-            <input type="text" class="form-control" id="codigo" name="codigo" required>
-          </div>
-          <div class="mb-3">
-            <label for="correo" class="form-label">Correo</label>
-            <input type="email" class="form-control" id="correo" name="correo" required>
-          </div>
-          <div class="mb-3">
-            <label for="telefono" class="form-label">Teléfono</label>
-            <input type="text" class="form-control" id="telefono" name="telefono">
-          </div>
-          <div class="mb-3">
-            <label for="contrasena" class="form-label">Contraseña</label>
-            <input type="password" class="form-control" id="contrasena" name="contrasena" required>
-          </div>
-          <div class="mb-3">
-            <label for="role" class="form-label">Role</label>
-            <select class="form-select" id="role" name="role">
-              <option value="user" selected>Usuario</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-success">Agregar Usuario</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<!-- Botón para abrir el modal -->
 
 
-</div>
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Modal -->
+
+
+<!-- Bootstrap JS (asegúrate de tenerlo en tu base.html) -->

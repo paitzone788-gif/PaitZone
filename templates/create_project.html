@@ -2,6 +2,7 @@
 {% block content %}
     <link rel="stylesheet" href="/static/css/botones.css">
     <link rel="stylesheet" href="/static/css/nav-bar.css">
+    <link rel="stylesheet" href="/static/css/fondo.css">
 
 
 <div class="container mt-4">
@@ -30,9 +31,13 @@
     <div class="mb-3">
       <label class="form-label">Carreras necesarias (máximo 4)</label><br />
       {% for carrera in carreras %}
-        <div class="form-check form-check-inline">
+        <div class="form-check form-check-inline mb-2">
           <input class="form-check-input carrera-checkbox" type="checkbox" name="carreras" id="{{ carrera }}" value="{{ carrera }}" />
           <label class="form-check-label" for="{{ carrera }}">{{ carrera }}</label>
+          
+          <!-- Input para cantidad de integrantes de esta carrera -->
+          <input type="number" class="form-control d-inline-block ms-2 cantidad-input" name="cantidad_carreras" min="0" value="0" style="width: 80px;" placeholder="Cantidad">
+
         </div>
       {% endfor %}
     </div>
@@ -42,6 +47,12 @@
 
   <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">🏠 Volver al inicio</a>
 </div>
+
 <script src="/static/js/animacion de nav-bar.js"></script>
+
+
+
+<!-- Contenedor de toasts flotantes -->
+
 
 {% endblock %}

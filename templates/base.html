@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/botones.css">
     <link rel="stylesheet" href="/static/css/nav-bar.css">
+    <link rel="stylesheet" href="/static/css/fondo.css">
     <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -23,18 +24,52 @@
 <body>
 
 
-
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    <div id="flash-messages">
-      {% for category, message in messages %}
-        <div class="alert alert-{{category}} flash-message">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
+    <div id="toast-container" class="position-fixed top-0 start-50 translate-middle-x mt-3 z-index-9999"></div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const messages = {{ messages | tojson }};
+        const container = document.getElementById('toast-container');
+
+        messages.forEach(function(msg, index) {
+            const category = msg[0]; // 'success', 'danger', etc.
+            const text = msg[1];
+
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${category} flash-message`;
+            toast.style.borderRadius = "50px";
+            toast.style.padding = "15px 25px";
+            toast.style.minWidth = "250px";
+            toast.style.textAlign = "center";
+            toast.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
+            toast.style.opacity = "0";
+            toast.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+            toast.style.transform = "translateY(-50px)";
+            toast.style.marginBottom = "10px";
+
+            toast.innerHTML = text;
+            container.appendChild(toast);
+
+            // Animación de entrada
+            setTimeout(() => {
+                toast.style.opacity = "1";
+                toast.style.transform = "translateY(0)";
+            }, index * 200);
+
+            // Animación de salida y eliminación automática
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateY(-50px)";
+                setTimeout(() => toast.remove(), 500);
+            }, 3000 + index * 200);
+        });
+      });
+    </script>
   {% endif %}
 {% endwith %}
+
 
 <script>
   // Animación para que los mensajes desaparezcan solos
@@ -111,6 +146,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<!-- Contenedor de toasts flotantes -->
+
 
 </body>
 </html>

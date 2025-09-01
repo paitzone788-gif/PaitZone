@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 18-08-2025 a las 03:46:39
+-- Tiempo de generación: 01-09-2025 a las 01:59:03
 -- Versión del servidor: 8.0.43
 -- Versión de PHP: 7.4.9
 
@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `carreras` (
   `id` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL
+  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -39,7 +39,7 @@ CREATE TABLE `carreras` (
 INSERT INTO `carreras` (`id`, `nombre`) VALUES
 (1, 'Administración'),
 (3, 'Biotecnología'),
-(4, 'Energías alternativas'),
+(4, 'Energías alternas'),
 (2, 'Gestión aduanal'),
 (6, 'Informática'),
 (7, 'Procesos de manufactura competitiva'),
@@ -53,8 +53,8 @@ INSERT INTO `carreras` (`id`, `nombre`) VALUES
 
 CREATE TABLE `equipos` (
   `id` int NOT NULL,
-  `nombre_proyecto` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_unicode_ci,
+  `nombre_proyecto` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `max_integrantes` int NOT NULL,
   `creador_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -64,7 +64,7 @@ CREATE TABLE `equipos` (
 --
 
 INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `max_integrantes`, `creador_id`) VALUES
-(10, 'Entrelaza', 'asdadasdagvadasdaf', 5, 15);
+(37, 'Alfonso', 'asdlañsmdmlas', 5, 388);
 
 -- --------------------------------------------------------
 
@@ -78,13 +78,19 @@ CREATE TABLE `equipo_carreras` (
   `carrera_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Agregar columna cantidad a equipo_carreras
+ALTER TABLE equipo_carreras
+ADD COLUMN cantidad INT NOT NULL DEFAULT 0;
+
+
 --
 -- Volcado de datos para la tabla `equipo_carreras`
 --
 
 INSERT INTO `equipo_carreras` (`id`, `equipo_id`, `carrera_id`) VALUES
-(13, 10, 3),
-(14, 10, 6);
+(79, 37, 1),
+(80, 37, 3),
+(81, 37, 2);
 
 -- --------------------------------------------------------
 
@@ -103,8 +109,9 @@ CREATE TABLE `equipo_integrantes` (
 --
 
 INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
-(19, 10, 15),
-(20, 10, 16);
+(87, 37, 388),
+(90, 37, 391),
+(91, 37, 392);
 
 -- --------------------------------------------------------
 
@@ -115,7 +122,7 @@ INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
 CREATE TABLE `integrantes_equipo` (
   `id` int NOT NULL,
   `equipo_id` int NOT NULL,
-  `nombre_completo` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL
+  `nombre_completo` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -126,21 +133,29 @@ CREATE TABLE `integrantes_equipo` (
 
 CREATE TABLE `usuarios` (
   `id` int NOT NULL,
-  `nombre_completo` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `carrera` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `correo` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `contrasena` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
-) ;
+  `nombre_completo` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `carrera` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `correo` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `telefono` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contrasena` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'user',
+  `grado` varchar(2) NOT NULL DEFAULT '',
+  `grupo` varchar(2) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, `telefono`, `contrasena`) VALUES
-(15, 'ROBERTO MOISES CANTOR CEJA ', 'Informática', '4518013', 'roberto1001@alumnos.udg.mx', '3323764537', '12345'),
-(16, 'Maite', 'Informática', '4518012', 'maite1001@alumnos.udg.mx', '33129317151', '12345');
+INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, `telefono`, `contrasena`, `role`, `grado`, `grupo`) VALUES
+(23, 'Administrador', 'Administración', 'admin001', 'admin@entrelaza.com', '0000000000', 'pbkdf2:sha256:1000000$L5LcO6fdXSvc94Kx$87ba4f605378059ff31ad8bc3bd5d4aedc37d160d55e81991d778a0392a44fe2', 'admin', '', ''),
+(387, 'Maite', 'Energías alternativas', '45180121', 'maite1001@alumnos.udg.mx', '3323764537', 'pbkdf2:sha256:1000000$vbbgmqM8ehE7rdGg$3fcb814d8b1fbaab4ee1d5e425b09328d44e7f7124338835b873eef2d7efdde3', 'user', '3', 'B'),
+(388, 'Alfonso', 'Gestión aduanal', '2313123', 'alfonso@alumnos.udg.mx', '33231230120', 'pbkdf2:sha256:1000000$bIhpJTPJZeS7GRES$a3e063e1ff57dedf8ee6d09ddc5553f60bc11b199052fa4db0147f1749fefe79', 'user', '1', 'B'),
+(389, 'ALEJANDRA JOSSELIN', 'Energías alternativas', '1234123', 'ale@alumnos.udg.mx', '1923114', 'pbkdf2:sha256:1000000$hrMojDw834VqSqMK$4db7d77506261c7ea01ee5c43169eb9465621cb9d2e3cabcaa29504b524786f5', 'user', '4', 'B'),
+(390, 'pepe', 'Administración', '45180211', 'pepe@alumnos.udg.mx', '123123141', 'pbkdf2:sha256:1000000$rqSqm80tqIvrFZCQ$815f09c8307ec52ecda09985340dcc153bd45ed9f6ba22bc1eb74609324ed025', 'user', '3', 'B'),
+(391, 'Sandra flores', 'Administración', '45180992', 'sandra@alumnos.udg.mx', '12314', 'pbkdf2:sha256:1000000$nCDuyqklX37zxI7U$4f5f1fd07041b43cc0ad011b7fae118b9d1da0d2903398fecadd489e0f43227f', 'user', '4', 'B'),
+(392, 'FASHLYasdasdada', 'Administración', '12123144', 'fashly@alumnos.udg.mx', '17309128', 'pbkdf2:sha256:1000000$f1e05XgQhPPqqEx2$77f346164a09e5c11523e0e1d82784d50b8e35e113c62e46b2e0d2c610593bcd', 'user', '4', 'B');
 
 --
 -- Índices para tablas volcadas
@@ -205,19 +220,19 @@ ALTER TABLE `carreras`
 -- AUTO_INCREMENT de la tabla `equipos`
 --
 ALTER TABLE `equipos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT de la tabla `equipo_carreras`
 --
 ALTER TABLE `equipo_carreras`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT de la tabla `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
 
 --
 -- AUTO_INCREMENT de la tabla `integrantes_equipo`
@@ -229,7 +244,7 @@ ALTER TABLE `integrantes_equipo`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=393;
 
 --
 -- Restricciones para tablas volcadas
