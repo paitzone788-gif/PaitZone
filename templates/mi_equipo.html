@@ -15,7 +15,7 @@
 
 <nav class="navbar navbar-expand-lg custom-navbar fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="/">PaitZone</a>
+        <a class="navbar-brand logo-big mx-auto" href="/">PaitZone</a>
 
         <div class="ms-auto d-flex align-items-center">
             <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
@@ -23,7 +23,7 @@
         </div>
     </div>
 </nav>
-
+<br><br><br><br><br><br><br><br>
 <!-- Mensajes flash -->
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -38,7 +38,7 @@
   {% endif %}
 {% endwith %}
 
-<br><br><br><br>
+
 
 
 <div class="container" style="padding-top:70px;">

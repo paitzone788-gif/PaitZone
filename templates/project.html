@@ -11,18 +11,22 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg custom-navbar fixed-top">
+<nav id="mainNavbar" 
+     class="navbar navbar-expand-lg custom-navbar fixed-top py-4 {% if usuario %}logged-in{% endif %}">
     <div class="container">
-        <a class="navbar-brand" href="/">PaitZone</a>
+        <!-- Logo -->
+        <a id="logoBrand" class="navbar-brand logo-big mx-auto" href="/">PaitZone</a>
 
+        <!-- Botón hamburguesa -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
             aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
+        <!-- Links -->
         <div class="collapse navbar-collapse" id="navbarContent">
             {% if usuario %}
-            <div class="ms-auto d-flex align-items-center">
+            <div class="ms-auto d-flex align-items-center fade-links show-links">
                 <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
 
                 {% if mi_proyecto %}
@@ -31,46 +35,43 @@
                     <a href="{{ url_for('create_project') }}" class="btn btn-cafe me-2">Crear proyecto</a>
                 {% endif %}
 
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-light"><i class="fa-solid fa-right-from-bracket" style="font-size: 1rem; color: #ca8205;"></i></a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+                    <i class="fa-solid fa-right-from-bracket" style="font-size: 1rem; color: #ca8205;"></i>
+                </a>
             </div>
             {% else %}
-            <div class="ms-auto">
+            <div class="ms-auto fade-links">
                 <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2"><i class="fa-solid fa-user"></i></a>
-                <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card" ></i></a>
+                <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card"></i></a>
             </div>
             {% endif %}
         </div>
     </div>
 </nav>
+<br><br>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container mt-3">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show rounded-pill shadow-sm auto-dismiss py-2 px-3 small-alert" role="alert">
+          <span class="small">{{ message }}</span>
+          <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
 
-<br><br><br>
+
+<br><br>
 
 <div class="container" style="padding-top:70px;">
 
     <!-- MOSTRAR PROYECTO DEL USUARIO -->
     {% if mi_proyecto %}
-        <h2 class="mb-4 text-center">Tu Proyecto Actual</h2>
-        <div class="card mb-4 border-primary shadow">
-            <div class="card-body">
-                <h4 class="card-title">{{ mi_proyecto.nombre_proyecto }}</h4>
-                <p class="card-text">{{ mi_proyecto.descripcion }}</p>
-                <p><strong>Integrantes:</strong> {{ mi_proyecto.integrantes | length }}/{{ mi_proyecto.max_integrantes }}</p>
-                
-                <ul class="list-group list-group-flush mb-3">
-                    {% for integrante in mi_proyecto.integrantes %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        👤 {{ integrante.nombre_completo }} - {{ integrante.carrera }} - Grado: {{ integrante.grado }} - Grupo: {{ integrante.grupo }}
-                        {% if integrante.telefono %}
-                        <a href="https://wa.me/{{ integrante.telefono }}" target="_blank" class="btn btn-success btn-sm">💬 WhatsApp</a>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-
-                <p><strong>Carreras necesarias:</strong> {{ mi_proyecto.carreras_necesarias | join(', ') }}</p>
-            </div>
-        </div>
+        
 
         <!-- SECCIÓN DE NOTICIAS / INFORMACIÓN ADICIONAL -->
         <div class="card mb-4 shadow-sm">
@@ -84,12 +85,12 @@
 
     <!-- MOSTRAR EQUIPOS DISPONIBLES SOLO SI NO HAY PROYECTO -->
     {% if not mi_proyecto %}
-        <h2 class="mb-4 text-center">Equipos Disponibles</h2>
+        <h2 class="mb-4 text-center" style="color: rgb(255, 249, 249);">Equipos Disponibles</h2><br>
         <div class="row">
             {% for equipo in equipos %}
             <div class="col-md-6 col-lg-4">
-                <div class="card project-card mb-4 shadow-sm">
-                    <div class="card-body">
+                <div class="card project-card mb-4 shadow-sm" style="background-color: rgba(0, 0, 0, 0.844);">
+                    <div class="card-body" style="color: white;">
                         <h5 class="card-title">Proyecto: {{ equipo.nombre_proyecto }}</h5>
                         <p class="card-text">{{ equipo.descripcion }}</p>
                         <ul>
@@ -105,7 +106,7 @@
                 </div>
             </div>
             {% else %}
-            <p class="text-center">No hay equipos disponibles en este momento.</p>
+            <p class="text-center" style="color: red;">No hay equipos disponibles en este momento.</p>
             {% endfor %}
         </div>
     {% endif %}

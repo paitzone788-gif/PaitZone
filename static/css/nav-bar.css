@@ -1,29 +1,69 @@
-/* Fondo azul marino tipo océano */
+/* Estado inicial (antes de login) */
 .custom-navbar {
-    background-color: #001f3f; /* azul marino */
+  background: transparent;
+  transition: all 0.4s ease;
+  border: none;
 }
 
-/* Marca PaitZone color café */
-.custom-navbar .navbar-brand {
-    color: #B1976C;
-    font-weight: bold;
+.logo-big {
+  font-size: 3rem;
+  font-weight: bold;
+  transition: all 0.4s ease;
 }
 
-/* Usuario color verde */
-.custom-navbar .username {
-    color: #4CAF50;
-    font-weight: 500;
+.logo-small {
+  font-size: 1.5rem !important;
 }
+
+.fade-links {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.navbar.shrink {
+  background: rgba(255, 254, 254, 0.8);
+  backdrop-filter: blur(8px);
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.navbar.shrink .fade-links {
+  opacity: 1;
+}
+
+.navbar.shrink .logo-big {
+  font-size: 1.5rem !important;
+}
+
+/* --- Estado después de iniciar sesión --- */
+.custom-navbar.logged-in {
+  background: #fff !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 0.75rem 1rem !important;
+}
+
+.custom-navbar.logged-in .logo-big {
+  font-size: 1.5rem !important;
+  margin-right: auto;
+}
+
+.custom-navbar.logged-in .fade-links {
+  opacity: 1 !important;
+}
+
+
+
+
 
 /* Botones café */
 .btn-cafe {
-    background-color: #B1976C;
-    color: #fff;
+    background-color: #f8faff;
+    color: #000000;
     border: none;
 }
 
 .btn-cafe:hover {
-    background-color: #a07f5d;
+    background-color: #7a7676;
 }
 
 
@@ -54,15 +94,24 @@
 
 /* Icono de iniciar sesión */
 .custom-navbar .btn-outline-light i.fa-user {
-    color: #4CAF50; /* verde */
+    color: #060606; /* verde */
 }
 
 /* Icono de registrar */
 .custom-navbar .btn-cafe i.fa-address-card {
-    color: #fff; /* blanco sobre botón café */
+    color: #000000; /* blanco sobre botón café */
 }
 
 /* Ajuste de padding en botones con icono */
 .custom-navbar .btn i {
     margin-right: 0.1rem; /* espacio pequeño si quieres texto al lado */
 }
+
+
+
+/* Ajuste de alertas de mensajes*/
+.small-alert {
+  padding: 1.4rem 1.75rem !important; /* reduce espacio interno */
+}
+
+

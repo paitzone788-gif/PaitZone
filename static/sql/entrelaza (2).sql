@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 07, 2025 at 07:53 PM
+-- Generation Time: Sep 07, 2025 at 09:22 PM
 -- Server version: 8.0.43
 -- PHP Version: 7.4.9
 
@@ -154,7 +154,6 @@ INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
 (105, 62, 419),
 (108, 63, 406),
 (107, 63, 425),
-(109, 64, 397),
 (110, 64, 434),
 (111, 65, 402),
 (112, 65, 435),
@@ -166,6 +165,7 @@ INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
 (118, 68, 428),
 (120, 69, 433),
 (119, 69, 437),
+(147, 70, 397),
 (122, 70, 409),
 (121, 70, 423),
 (123, 71, 409),
@@ -314,19 +314,19 @@ ALTER TABLE `carreras`
 -- AUTO_INCREMENT for table `equipos`
 --
 ALTER TABLE `equipos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT for table `equipo_carreras`
 --
 ALTER TABLE `equipo_carreras`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
 
 --
 -- AUTO_INCREMENT for table `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
 
 --
 -- AUTO_INCREMENT for table `integrantes_equipo`
