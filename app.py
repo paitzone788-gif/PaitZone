@@ -26,12 +26,12 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
-# Página de inicio -> muestra equipos
 @app.route('/')
 def index():
     cursor = mysql.connection.cursor()
     usuario = session.get('usuario')
 
+    # --- Traer equipos según usuario ---
     if usuario:
         # Solo equipos que necesiten la carrera del usuario
         cursor.execute('''
@@ -52,7 +52,7 @@ def index():
 
     equipos = cursor.fetchall()
 
-    # Filtrar equipos que no estén llenos (o que ya tenga el usuario dentro)
+    # --- Filtrar equipos que no estén llenos o que contengan al usuario ---
     filtrados = []
     if usuario:
         for eq in equipos:
@@ -67,7 +67,7 @@ def index():
     else:
         equipos = [eq for eq in equipos if eq['integrantes_actuales'] < eq['max_integrantes']]
 
-    # Agregar integrantes y carreras necesarias a cada equipo
+    # --- Agregar integrantes y carreras necesarias ---
     for equipo in equipos:
         cursor.execute('''
             SELECT u.id, u.nombre_completo, u.carrera, u.grado, u.grupo
@@ -85,8 +85,9 @@ def index():
         ''', (equipo['id'],))
         equipo['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
 
-    # Verificar si el usuario ya tiene un proyecto
+    # --- Verificar si el usuario ya tiene un proyecto ---
     mi_proyecto = None
+    equipos_disponibles = equipos.copy()  # por defecto todos los filtrados
     if usuario:
         cursor.execute('''
             SELECT e.* FROM equipos e
@@ -97,6 +98,7 @@ def index():
         mi_proyecto = cursor.fetchone()
 
         if mi_proyecto:
+            # Traer integrantes y carreras del proyecto
             cursor.execute('''
                 SELECT u.id, u.nombre_completo, u.carrera, u.grado, u.grupo
                 FROM equipo_integrantes ei
@@ -113,8 +115,17 @@ def index():
             ''', (mi_proyecto['id'],))
             mi_proyecto['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
 
+            # Quitar su proyecto de los equipos disponibles
+            equipos_disponibles = [eq for eq in equipos if eq['id'] != mi_proyecto['id']]
+
     cursor.close()
-    return render_template("project.html", equipos=equipos, usuario=usuario, mi_proyecto=mi_proyecto)
+    return render_template(
+        "project.html",
+        equipos=equipos_disponibles,
+        usuario=usuario,
+        mi_proyecto=mi_proyecto
+    )
+
 
 
 
@@ -467,38 +478,53 @@ def create_project():
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
         max_integrantes = int(request.form['max_integrantes'])
-        integrantes_raw = request.form['integrantes']
+        integrantes_raw = request.form.get('integrantes', '')
         carreras_seleccionadas = request.form.getlist('carreras')
 
         # Limitar el número de carreras al máximo permitido
-        max_carreras = min(4, len(carreras_seleccionadas))
-        carreras_seleccionadas = carreras_seleccionadas[:max_carreras]
+        carreras_seleccionadas = carreras_seleccionadas[:4]
 
         # Crear el equipo
         cursor.execute(
-            "INSERT INTO equipos (nombre_proyecto, descripcion, max_integrantes, creador_id) VALUES (%s,%s,%s,%s)",
+            "INSERT INTO equipos (nombre_proyecto, descripcion, max_integrantes, creador_id) "
+            "VALUES (%s,%s,%s,%s)",
             (nombre, descripcion, max_integrantes, usuario['id'])
         )
         equipo_id = cursor.lastrowid
 
-        # Insertar al creador del equipo
+        # --- INSERTAR AL CREADOR ---
         cursor.execute(
             "INSERT INTO equipo_integrantes (equipo_id, usuario_id) VALUES (%s, %s)",
             (equipo_id, usuario['id'])
         )
 
-        # Insertar otros integrantes, evitando duplicados
+        # --- INSERTAR OTROS INTEGRANTES ---
         integrantes = [i.strip() for i in integrantes_raw.split(',') if i.strip()]
         for integrante_nombre in integrantes:
-            if integrante_nombre == usuario['nombre_completo']:
+            if integrante_nombre.lower() == usuario['nombre_completo'].lower():
                 continue  # evitar duplicar al creador
-            cursor.execute(
-                "INSERT INTO equipo_integrantes (equipo_id, usuario_id) "
-                "SELECT %s, id FROM usuarios WHERE nombre_completo=%s LIMIT 1",
-                (equipo_id, integrante_nombre)
-            )
 
-        # Insertar las carreras asociadas con cantidad
+            # Obtener el ID del usuario
+            cursor.execute("SELECT id FROM usuarios WHERE nombre_completo=%s LIMIT 1", (integrante_nombre,))
+            row = cursor.fetchone()
+            if row:
+                usuario_id = row['id']
+
+                # Verificar si ya está en el equipo
+                cursor.execute(
+                    "SELECT 1 FROM equipo_integrantes WHERE equipo_id=%s AND usuario_id=%s",
+                    (equipo_id, usuario_id)
+                )
+                if cursor.fetchone():
+                    continue  # ya existe, no insertar
+
+                # Insertar
+                cursor.execute(
+                    "INSERT INTO equipo_integrantes (equipo_id, usuario_id) VALUES (%s,%s)",
+                    (equipo_id, usuario_id)
+                )
+
+        # --- INSERTAR CARRERAS ASOCIADAS ---
         for carrera_nombre in carreras_seleccionadas:
             cursor.execute("SELECT id FROM carreras WHERE nombre=%s", (carrera_nombre,))
             carrera_row = cursor.fetchone()
@@ -515,11 +541,12 @@ def create_project():
         flash("¡Creaste tu equipo!", "success")
         return redirect(url_for('index'))
 
-    # Traer todas las carreras para el formulario
+    # GET: traer carreras para el formulario
     cursor.execute("SELECT nombre FROM carreras")
     carreras = [row['nombre'] for row in cursor.fetchall()]
     cursor.close()
     return render_template("create_project.html", carreras=carreras)
+
 
 
 

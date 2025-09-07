@@ -1,165 +1,120 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Entrelaza Polimatute</title>
-    <link rel="stylesheet" href="/static/css/fondo.css">
+<link rel="stylesheet" href="/static/css/fondo.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="/static/css/nav-bar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+<nav class="navbar navbar-expand-lg custom-navbar fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="/">Entrelaza</a>
+        <a class="navbar-brand" href="/">PaitZone</a>
 
-        {% if usuario %}
-            <div class="d-flex align-items-center ms-auto">
-                <span class="text-light me-3">Hola, {{ usuario['nombre_completo'] }}</span>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-                {# Revisar si el usuario ya pertenece a un proyecto #}
-                {% set ya_tiene_proyecto = false %}
-                {% for e in equipos %}
-                    {% for integrante in e.integrantes %}
-                        {% if integrante['id'] == usuario['id'] %}
-                            {% set ya_tiene_proyecto = true %}
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
+        <div class="collapse navbar-collapse" id="navbarContent">
+            {% if usuario %}
+            <div class="ms-auto d-flex align-items-center">
+                <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
 
-                {# Mostrar botón según si tiene proyecto o no #}
-{% if usuario %}
-    {% if mi_proyecto %}
-        <a href="{{ url_for('mi_equipo') }}" class="btn btn-primary me-2">Ver mi proyecto</a>
-    {% else %}
-        <a href="{{ url_for('create_project') }}" class="btn btn-success me-2">Crear proyecto</a>
-    {% endif %}
-{% endif %}
+                {% if mi_proyecto %}
+                    <a href="{{ url_for('mi_equipo') }}" class="btn btn-cafe me-2">Ver mi proyecto</a>
+                {% else %}
+                    <a href="{{ url_for('create_project') }}" class="btn btn-cafe me-2">Crear proyecto</a>
+                {% endif %}
 
-
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Cerrar sesión</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light"><i class="fa-solid fa-right-from-bracket" style="font-size: 1rem; color: #ca8205;"></i></a>
             </div>
-        {% else %}
+            {% else %}
             <div class="ms-auto">
-                <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2">Iniciar sesión</a>
-                <a href="{{ url_for('register') }}" class="btn btn-light">Registrarse</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2"><i class="fa-solid fa-user"></i></a>
+                <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card" ></i></a>
             </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 </nav>
-<!-- Mensajes flash -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="container mt-3">
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
-<script>
-  // Desaparecer alert automáticamente después de 4 segundos
-  setTimeout(() => {
-    document.querySelectorAll('.alert').forEach(alert => alert.remove());
-  }, 4000);
-</script>
+
+
 <br><br><br>
 
-
 <div class="container" style="padding-top:70px;">
-<h2 class="mb-4 text-center">Equipos disponibles</h2>
 
-<div class="row">
-{% for equipo in equipos %}
-    <div class="col-md-6 col-lg-4">
-        <div class="card project-card mb-4">
+    <!-- MOSTRAR PROYECTO DEL USUARIO -->
+    {% if mi_proyecto %}
+        <h2 class="mb-4 text-center">Tu Proyecto Actual</h2>
+        <div class="card mb-4 border-primary shadow">
             <div class="card-body">
-                <h5 class="card-title">Proyecto: {{ equipo.nombre_proyecto }}</h5>
-                <p class="card-text">{{ equipo.descripcion }}</p>
-                <ul>
-                    <li>Integrantes actuales: {{ equipo.integrantes | length }} / {{ equipo.max_integrantes }}</li>
-                    <li>Carreras necesarias: {{ equipo.carreras_necesarias | join(', ') }}</li>
+                <h4 class="card-title">{{ mi_proyecto.nombre_proyecto }}</h4>
+                <p class="card-text">{{ mi_proyecto.descripcion }}</p>
+                <p><strong>Integrantes:</strong> {{ mi_proyecto.integrantes | length }}/{{ mi_proyecto.max_integrantes }}</p>
+                
+                <ul class="list-group list-group-flush mb-3">
+                    {% for integrante in mi_proyecto.integrantes %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        👤 {{ integrante.nombre_completo }} - {{ integrante.carrera }} - Grado: {{ integrante.grado }} - Grupo: {{ integrante.grupo }}
+                        {% if integrante.telefono %}
+                        <a href="https://wa.me/{{ integrante.telefono }}" target="_blank" class="btn btn-success btn-sm">💬 WhatsApp</a>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
                 </ul>
 
-                {% if usuario %}
-                    {% set ya_tiene_proyecto = false %}
-                    {% for e in equipos %}
-                        {% if usuario.id in e.integrantes | map(attribute='id') %}
-                            {% set ya_tiene_proyecto = true %}
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if not ya_tiene_proyecto %}
-                        <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
-                    {% else %}
-                        <p class="text-muted text-center mb-0">Ya perteneces a un proyecto</p>
-                    {% endif %}
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Inicia sesión para unirte</a>
-                {% endif %}
+                <p><strong>Carreras necesarias:</strong> {{ mi_proyecto.carreras_necesarias | join(', ') }}</p>
             </div>
         </div>
-    </div>
-{% else %}
-    <p>No hay equipos disponibles.</p>
-{% endfor %}
-</div>
 
-{% if usuario %}
-    {% set mi_proyecto = None %}
-    {% for p in equipos %}
-        {% if usuario.id in p.integrantes | map(attribute='id') %}
-            {% set mi_proyecto = p %}
-        {% endif %}
-    {% endfor %}
-
-    {% if mi_proyecto %}
-        <h3 class="mt-4">Tu proyecto actual</h3>
-        <div class="card mb-3 {% if mi_proyecto.integrantes | length >= mi_proyecto.max_integrantes %}border-success{% endif %}">
+        <!-- SECCIÓN DE NOTICIAS / INFORMACIÓN ADICIONAL -->
+        <div class="card mb-4 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title">{{ mi_proyecto.nombre_proyecto }}</h5>
-                <p class="card-text">{{ mi_proyecto.descripcion }}</p>
-                <p class="card-text">
-                    <strong>Integrantes:</strong> {{ mi_proyecto.integrantes | length }}/{{ mi_proyecto.max_integrantes }}
-                    {% if mi_proyecto.integrantes | length >= mi_proyecto.max_integrantes %}
-                        <span class="badge bg-success ms-2">Proyecto Completo</span>
-                    {% endif %}
-                </p>
-                <ul class="list-group list-group-flush mb-3">
-                        {% for integrante in equipo.integrantes %}
-                        <li class="list-group-item">
-                         👤 {{ integrante.nombre_completo }} - {{ integrante.carrera }} - 
-                         Grado: {{ integrante.grado }} - Grupo: {{ integrante.grupo }}
-                        </li>
-                        {% endfor %}
-                </ul>
-
-
-                <p class="card-text"><strong>Carreras necesarias:</strong> {{ mi_proyecto.carreras_necesarias | join(', ') }}</p>
+                <h5 class="card-title">Noticias y Actualizaciones</h5>
+                <p class="card-text">Aquí puedes mostrar información relevante, anuncios de la plataforma o tips para tu proyecto.</p>
             </div>
+        </div>
+
+    {% endif %}
+
+    <!-- MOSTRAR EQUIPOS DISPONIBLES SOLO SI NO HAY PROYECTO -->
+    {% if not mi_proyecto %}
+        <h2 class="mb-4 text-center">Equipos Disponibles</h2>
+        <div class="row">
+            {% for equipo in equipos %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card project-card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Proyecto: {{ equipo.nombre_proyecto }}</h5>
+                        <p class="card-text">{{ equipo.descripcion }}</p>
+                        <ul>
+                            <li>Integrantes actuales: {{ equipo.integrantes | length }} / {{ equipo.max_integrantes }}</li>
+                            <li>Carreras necesarias: {{ equipo.carreras_necesarias | join(', ') }}</li>
+                        </ul>
+                        {% if usuario %}
+                        <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Inicia sesión para unirte</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center">No hay equipos disponibles en este momento.</p>
+            {% endfor %}
         </div>
     {% endif %}
-{% endif %}
-
-
 
 </div>
-
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/js/formularioequipo.js"></script>
 <script src="/static/js/animacion de nav-bar.js"></script>
-
-
-<!-- Contenedor de toasts flotantes -->
-
 
 </body>
 </html>

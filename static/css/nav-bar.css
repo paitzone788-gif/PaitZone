@@ -1,0 +1,68 @@
+/* Fondo azul marino tipo océano */
+.custom-navbar {
+    background-color: #001f3f; /* azul marino */
+}
+
+/* Marca PaitZone color café */
+.custom-navbar .navbar-brand {
+    color: #B1976C;
+    font-weight: bold;
+}
+
+/* Usuario color verde */
+.custom-navbar .username {
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+/* Botones café */
+.btn-cafe {
+    background-color: #B1976C;
+    color: #fff;
+    border: none;
+}
+
+.btn-cafe:hover {
+    background-color: #a07f5d;
+}
+
+
+
+/* Ajustar botones en móviles */
+@media (max-width: 992px) {
+    .custom-navbar .ms-auto {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .custom-navbar .btn, .custom-navbar .username {
+        margin-bottom: 0.5rem;
+    }
+}
+
+
+
+/* Iconos del nav más pequeños y colores */
+.custom-navbar i {
+    font-size: 0.88rem; /* tamaño ideal para nav */
+    vertical-align: middle; /* alineación con el texto del botón */
+}
+
+/* Icono de cerrar sesión */
+.custom-navbar .btn-outline-light i {
+    color: #ca8205; /* color café */
+}
+
+/* Icono de iniciar sesión */
+.custom-navbar .btn-outline-light i.fa-user {
+    color: #4CAF50; /* verde */
+}
+
+/* Icono de registrar */
+.custom-navbar .btn-cafe i.fa-address-card {
+    color: #fff; /* blanco sobre botón café */
+}
+
+/* Ajuste de padding en botones con icono */
+.custom-navbar .btn i {
+    margin-right: 0.1rem; /* espacio pequeño si quieres texto al lado */
+}

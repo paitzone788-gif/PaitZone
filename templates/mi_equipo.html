@@ -8,20 +8,22 @@
     <link rel="stylesheet" href="/static/css/botones.css">
     <link rel="stylesheet" href="/static/css/nav-bar.css">
     <link rel="stylesheet" href="/static/css/fondo.css">
+<link rel="stylesheet" href="/static/css/nav-bar.css">
 
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+<nav class="navbar navbar-expand-lg custom-navbar fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="/">Entrelaza</a>
-        <div class="ms-auto">
-            <span class="text-light me-3">Hola, {{ usuario['nombre_completo'] }}</span>
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">🏠 Volver al inicio</a>
-        </div>
+        <a class="navbar-brand" href="/">PaitZone</a>
 
+        <div class="ms-auto d-flex align-items-center">
+            <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
+            <a href="{{ url_for('index') }}" class="btn btn-cafe">🏠 Volver al inicio</a>
+        </div>
     </div>
 </nav>
+
 <!-- Mensajes flash -->
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -93,14 +95,15 @@
       </div>
       <div class="modal-body">
         <ul class="list-group">
-          {% for integrante in equipo.integrantes %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              👤 {{ integrante.nombre }} - {{ integrante.carrera }}
-              {% if integrante.telefono %}
-                <a href="https://wa.me/{{ integrante.telefono }}" target="_blank" class="btn btn-success btn-sm">💬 WhatsApp</a>
-              {% endif %}
-            </li>
-          {% endfor %}
+{% for integrante in equipo.integrantes %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    👤 {{ integrante.nombre_completo }} - {{ integrante.carrera }}
+    {% if integrante.telefono %}
+      <a href="https://wa.me/{{ integrante.telefono }}" target="_blank" class="btn btn-success btn-sm">💬 WhatsApp</a>
+    {% endif %}
+  </li>
+{% endfor %}
+
         </ul>
       </div>
     </div>
