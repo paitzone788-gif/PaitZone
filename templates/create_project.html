@@ -29,6 +29,12 @@
     </div>
 
     <div class="mb-3">
+      <label for="asesor" class="form-label">¿Quién es tu asesor? (usa nombre completo)</label>
+      <input type="text" class="form-control" id="asesor" name="asesor" required placeholder="Ej: Juan Pérez García">
+    </div>
+
+
+    <div class="mb-3">
       <label class="form-label">Carreras necesarias (máximo 6)</label><br />
       {% for carrera in carreras %}
         <div class="form-check form-check-inline mb-2">

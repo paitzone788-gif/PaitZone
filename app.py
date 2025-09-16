@@ -389,6 +389,7 @@ def agregar_equipo():
 
 
 # Mostrar proyecto del usuario
+# Mostrar proyecto del usuario
 @app.route('/mi_equipo')
 def mi_equipo():
     if 'usuario' not in session:
@@ -398,9 +399,9 @@ def mi_equipo():
     usuario = session['usuario']
     cursor = mysql.connection.cursor()
 
-    # Buscar proyecto del usuario
+    # Buscar proyecto del usuario, incluyendo asesor
     cursor.execute('''
-        SELECT e.id, e.nombre_proyecto, e.descripcion, e.max_integrantes
+        SELECT e.id, e.nombre_proyecto, e.descripcion, e.max_integrantes, e.asesor
         FROM equipos e
         JOIN equipo_integrantes ei ON e.id = ei.equipo_id
         WHERE ei.usuario_id = %s
@@ -437,6 +438,7 @@ def mi_equipo():
 
     cursor.close()
     return render_template('mi_equipo.html', usuario=usuario, equipo=equipo)
+
 
 
 
@@ -478,17 +480,18 @@ def create_project():
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
         max_integrantes = int(request.form['max_integrantes'])
+        asesor = request.form.get('asesor', '').strip()  # <- nuevo campo
         integrantes_raw = request.form.get('integrantes', '')
         carreras_seleccionadas = request.form.getlist('carreras')
 
         # Limitar el número de carreras al máximo permitido
         carreras_seleccionadas = carreras_seleccionadas[:4]
 
-        # Crear el equipo
+        # Crear el equipo con asesor
         cursor.execute(
-            "INSERT INTO equipos (nombre_proyecto, descripcion, max_integrantes, creador_id) "
-            "VALUES (%s,%s,%s,%s)",
-            (nombre, descripcion, max_integrantes, usuario['id'])
+            "INSERT INTO equipos (nombre_proyecto, descripcion, max_integrantes, creador_id, asesor) "
+            "VALUES (%s,%s,%s,%s,%s)",
+            (nombre, descripcion, max_integrantes, usuario['id'], asesor)
         )
         equipo_id = cursor.lastrowid
 
@@ -546,6 +549,7 @@ def create_project():
     carreras = [row['nombre'] for row in cursor.fetchall()]
     cursor.close()
     return render_template("create_project.html", carreras=carreras)
+
 
 
 
