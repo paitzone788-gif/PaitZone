@@ -12,42 +12,53 @@
 <body>
 
 <nav id="mainNavbar" 
-     class="navbar navbar-expand-lg custom-navbar fixed-top py-4 {% if usuario %}logged-in{% endif %}">
-    <div class="container">
-        <!-- Logo -->
-        <a id="logoBrand" class="navbar-brand logo-big mx-auto" href="/">PaitZone</a>
+     class="navbar navbar-expand-lg custom-navbar shadow-sm fixed-top py-4 {% if usuario %}logged-in{% endif %}">
+  <div class="container-fluid position-relative">
 
-        <!-- Botón hamburguesa -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <!-- Marca centrada -->
+    <a class="navbar-brand letra1 fw-bold" href="/">PaitZone</a>
 
-        <!-- Links -->
-        <div class="collapse navbar-collapse" id="navbarContent">
-            {% if usuario %}
-            <div class="ms-auto d-flex align-items-center fade-links show-links">
-                <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
+    <!-- Botón hamburguesa -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-                {% if mi_proyecto %}
-                    <a href="{{ url_for('mi_equipo') }}" class="btn btn-cafe me-2">Ver mi proyecto</a>
-                {% else %}
-                    <a href="{{ url_for('create_project') }}" class="btn btn-cafe me-2">Crear proyecto</a>
-                {% endif %}
+    <!-- Contenido colapsable -->
+    <div class="collapse navbar-collapse" id="navbarContent">
 
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
-                    <i class="fa-solid fa-right-from-bracket" style="font-size: 1rem; color: #ca8205;"></i>
-                </a>
-            </div>
-            {% else %}
-            <div class="ms-auto fade-links">
-                <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2"><i class="fa-solid fa-user"></i></a>
-                <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card"></i></a>
-            </div>
-            {% endif %}
-        </div>
+      {% if usuario %}
+      <div class="ms-auto d-flex align-items-center navbar-right fade-links show-links">
+
+        <!-- Nombre usuario -->
+        <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
+
+        <!-- Proyecto -->
+        {% if mi_proyecto %}
+        <a href="{{ url_for('mi_equipo') }}" class="btn btn-cafe me-2">Ver mi proyecto</a>
+        {% else %}
+        <a href="{{ url_for('create_project') }}" class="btn btn-cafe me-2">Crear proyecto</a>
+        {% endif %}
+
+        <!-- Logout -->
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+          <i class="fa-solid fa-right-from-bracket" style="font-size: 1rem; color: #ca8205;"></i>
+        </a>
+      </div>
+
+      {% else %}
+      <div class="ms-auto navbar-right fade-links">
+        <!-- Login -->
+        <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2"><i class="fa-solid fa-user"></i></a>
+        <!-- Registro -->
+        <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card"></i></a>
+      </div>
+      {% endif %}
+
     </div>
+  </div>
 </nav>
+
 <br><br>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -118,6 +129,29 @@
                 </button>
             </div>
             
+            <div class="container text-center">
+  <div class="row">
+    <div class="col">
+      <img src="/static/img/n1.jpg" alt="">
+      <p>skibidi</p>
+    </div>
+    <div class="col">
+      <img src="/static/img/n1.jpg" alt="">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <img src="/static/img/n1.jpg" alt="">
+    </div>
+    <div class="col">
+      <img src="/static/img/n1.jpg" alt="">
+    </div>
+    <div class="col">
+      <img src="/static/img/n1.jpg" alt="">
+    </div>
+  </div>
+
+            </div>
 
         </div>
     </div>

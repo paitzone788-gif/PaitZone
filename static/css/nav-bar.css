@@ -1,54 +1,52 @@
 /* Estado inicial (antes de login) */
-.custom-navbar {
-  background: transparent;
-  transition: all 0.4s ease;
-  border: none;
+/* NAVBAR GRANDE (transparente) */
+.navbar {
+  background-color: transparent !important;
+  padding: 7rem 1rem;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  backdrop-filter: none;
 }
 
-.logo-big {
-  font-size: 3rem;
-  font-weight: bold;
-  transition: all 0.4s ease;
+/* NAVBAR REDUCIDA */
+.navbar-shrink {
+  background-color: #D7D1CA !important;
+  padding: 0.5rem 1rem !important;
+  border-bottom: 2px solid #000;
+  backdrop-filter: blur(6px);
 }
 
-.logo-small {
-  font-size: 1.5rem !important;
+/* LOGO */
+.navbar-brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 5rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #fbfffc;
+  transition: all 0.3s ease;
 }
 
-.fade-links {
+.navbar-shrink .navbar-brand {
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+}
+
+/* BOTONES DERECHA */
+.navbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   opacity: 0;
-  transition: opacity 0.5s ease;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
-.navbar.shrink {
-  background: rgba(255, 254, 254, 0.8);
-  backdrop-filter: blur(8px);
-  padding-top: 0.5rem !important;
-  padding-bottom: 0.5rem !important;
-}
-
-.navbar.shrink .fade-links {
+.navbar-shrink .navbar-right {
   opacity: 1;
-}
-
-.navbar.shrink .logo-big {
-  font-size: 1.5rem !important;
-}
-
-/* --- Estado después de iniciar sesión --- */
-.custom-navbar.logged-in {
-  background: #fff !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  padding: 0.75rem 1rem !important;
-}
-
-.custom-navbar.logged-in .logo-big {
-  font-size: 1.5rem !important;
-  margin-right: auto;
-}
-
-.custom-navbar.logged-in .fade-links {
-  opacity: 1 !important;
+  pointer-events: all;
 }
 
 
