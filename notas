@@ -1,23 +1,2 @@
-<nav id="mainNavbar" class="navbar shadow-sm">
-  <div class="container-fluid position-relative">
+id="notificacionesModal"
 
-    <!-- Marca centrada -->
-    <a class="navbar-brand letra1 fw-bold" href="/home-user">FASHLY</a>
-
-    <!-- Íconos a la derecha -->
-    <div class="navbar-right">
-     
-              <button onclick="toggleForm('form-overlay')" type="button" class="btn btn-primary btn-sm"><i class="fa-solid fa-user fa-fade"></i></button> 
-          
-        <big><big> <button onclick="toggleForm('form-overlay1')" type="button" class="btn btn-primary btn-sm"><i class="fa-solid fa-id-card"></i></button></big></big></big></big></big></big>
- 
-
-    <!-- Búsqueda -->
-
-
-      <!-- Logout -->
-
-
-    </div>
-  </div>
-</nav>

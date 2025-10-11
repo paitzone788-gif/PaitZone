@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 11, 2025 at 01:19 AM
+-- Generation Time: Oct 11, 2025 at 09:48 PM
 -- Server version: 8.0.43
 -- PHP Version: 7.4.9
 
@@ -58,30 +58,31 @@ CREATE TABLE `equipos` (
   `asesor` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `max_integrantes` int NOT NULL,
   `creador_id` int NOT NULL,
-  `privacidad` enum('publico','privado') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'publico'
+  `privacidad` enum('publico','privado') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'publico',
+  `privado` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `equipos`
 --
 
-INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `asesor`, `max_integrantes`, `creador_id`, `privacidad`) VALUES
-(57, 'Alpha', 'Equipo de prueba Alpha', '', 5, 404, 'publico'),
-(58, 'Beta', 'Equipo de prueba Beta', '', 5, 435, 'publico'),
-(59, 'Gamma', 'Equipo de prueba Gamma', '', 5, 403, 'publico'),
-(60, 'Delta', 'Equipo de prueba Delta', '', 5, 425, 'publico'),
-(61, 'Epsilon', 'Equipo de prueba Epsilon', '', 5, 432, 'publico'),
-(62, 'Zeta', 'Equipo de prueba Zeta', '', 5, 420, 'publico'),
-(63, 'Theta', 'Equipo de prueba Theta', '', 5, 422, 'publico'),
-(64, 'Sigma', 'Equipo de prueba Sigma', '', 5, 431, 'publico'),
-(65, 'Omega', 'Equipo de prueba Omega', '', 5, 417, 'publico'),
-(66, 'Kappa', 'Equipo de prueba Kappa', '', 5, 422, 'publico'),
-(67, 'Phoenix', 'Equipo de prueba Phoenix', '', 5, 437, 'publico'),
-(68, 'Dragon', 'Equipo de prueba Dragon', '', 5, 437, 'publico'),
-(69, 'Leones', 'Equipo de prueba Leones', '', 5, 435, 'publico'),
-(70, 'Tiburones', 'Equipo de prueba Tiburones', '', 5, 406, 'publico'),
-(71, 'Halcones', 'Equipo de prueba Halcones', '', 5, 422, 'publico'),
-(77, 'CACHETES HIJO DE PERRA ', 'oashdajnndjkab', 'claudia shembaun', 5, 397, 'privado');
+INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `asesor`, `max_integrantes`, `creador_id`, `privacidad`, `privado`) VALUES
+(57, 'Alpha', 'Equipo de prueba Alpha', '', 5, 404, 'publico', 1),
+(58, 'Beta', 'Equipo de prueba Beta', '', 5, 435, 'publico', 1),
+(59, 'Gamma', 'Equipo de prueba Gamma', '', 5, 403, 'publico', 1),
+(60, 'Delta', 'Equipo de prueba Delta', '', 5, 425, 'publico', 1),
+(61, 'Epsilon', 'Equipo de prueba Epsilon', '', 5, 432, 'publico', 1),
+(62, 'Zeta', 'Equipo de prueba Zeta', '', 5, 420, 'publico', 1),
+(63, 'Theta', 'Equipo de prueba Theta', '', 5, 422, 'publico', 1),
+(64, 'Sigma', 'Equipo de prueba Sigma', '', 5, 431, 'publico', 1),
+(65, 'Omega', 'Equipo de prueba Omega', '', 5, 417, 'publico', 1),
+(66, 'Kappa', 'Equipo de prueba Kappa', '', 5, 422, 'publico', 1),
+(67, 'Phoenix', 'Equipo de prueba Phoenix', '', 5, 437, 'publico', 1),
+(68, 'Dragon', 'Equipo de prueba Dragon', '', 5, 437, 'publico', 1),
+(69, 'Leones', 'Equipo de prueba Leones', '', 5, 435, 'publico', 1),
+(70, 'Tiburones', 'Equipo de prueba Tiburones', '', 5, 406, 'publico', 1),
+(71, 'Halcones', 'Equipo de prueba Halcones', '', 5, 422, 'publico', 1),
+(85, 'CACHETES HIJO DE PERRA 3', 'ñAOSIhndaipjsbdnpaijsbdkajobdkajbdkjalsbdadasdñlajkpwjaoijpak jo0 se ', 'claudia shembaun', 5, 397, 'privado', 1);
 
 -- --------------------------------------------------------
 
@@ -125,10 +126,9 @@ INSERT INTO `equipo_carreras` (`id`, `equipo_id`, `carrera_id`, `cantidad`) VALU
 (111, 70, 6, 0),
 (112, 71, 5, 0),
 (113, 71, 1, 0),
-(130, 77, 1, 0),
-(131, 77, 3, 0),
-(132, 77, 4, 0),
-(133, 77, 6, 0);
+(160, 85, 4, 0),
+(161, 85, 2, 0),
+(162, 85, 6, 0);
 
 -- --------------------------------------------------------
 
@@ -177,7 +177,7 @@ INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
 (123, 71, 409),
 (124, 71, 419),
 (153, 71, 439),
-(159, 77, 397);
+(173, 85, 397);
 
 -- --------------------------------------------------------
 
@@ -190,6 +190,58 @@ CREATE TABLE `integrantes_equipo` (
   `equipo_id` int NOT NULL,
   `nombre_completo` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notificaciones`
+--
+
+CREATE TABLE `notificaciones` (
+  `id` int NOT NULL,
+  `usuario_id` int NOT NULL,
+  `mensaje` varchar(255) NOT NULL,
+  `tipo` enum('solicitud','respuesta') NOT NULL,
+  `leida` tinyint(1) DEFAULT '0',
+  `fecha` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `notificaciones`
+--
+
+INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `tipo`, `leida`, `fecha`) VALUES
+(1, 397, 'Alexis leandro cuevas  ha solicitado unirse a tu equipo \'cachetes hijo de perra\'', 'solicitud', 1, '2025-10-11 04:58:18'),
+(2, 440, 'Jose alfonso garcia jimenez ha solicitado unirse a tu equipo \'Alexis leandro cuevas \'', 'solicitud', 1, '2025-10-11 18:20:30'),
+(3, 397, 'Tu solicitud para unirte al equipo ha sido aceptada.', 'respuesta', 1, '2025-10-11 19:53:08'),
+(4, 397, 'Tu solicitud para unirte al equipo ha sido rechazada.', 'respuesta', 1, '2025-10-11 19:53:14'),
+(5, 397, 'Tu solicitud para unirte al equipo ha sido rechazada.', 'respuesta', 1, '2025-10-11 19:54:38'),
+(6, 397, 'Tu solicitud para unirte al equipo ha sido rechazada.', 'respuesta', 1, '2025-10-11 19:54:41'),
+(7, 397, 'Tu solicitud para unirte al equipo ha sido rechazada.', 'respuesta', 1, '2025-10-11 19:55:00'),
+(8, 397, 'Tu solicitud para unirte al equipo ha sido rechazada.', 'respuesta', 1, '2025-10-11 19:57:02'),
+(9, 397, 'Tu solicitud para unirte al equipo \'Alexis leandro cuevas \' fue rechazada', 'respuesta', 1, '2025-10-11 20:30:50'),
+(10, 397, 'Tu solicitud para unirte al equipo \'Alexis leandro cuevas \' fue aceptada', 'respuesta', 1, '2025-10-11 20:30:54'),
+(11, 397, 'Tu solicitud para unirte al equipo \'Alexis leandro cuevas \' fue rechazada', 'respuesta', 1, '2025-10-11 20:31:05'),
+(12, 440, 'Alexis leandro cuevas  ha solicitado unirse a tu equipo \'Alexis leandro cuevas \'', 'solicitud', 1, '2025-10-11 20:31:25'),
+(14, 440, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue rechazada', 'respuesta', 1, '2025-10-11 20:33:43'),
+(15, 440, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada', 'respuesta', 1, '2025-10-11 20:34:28'),
+(16, 440, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue rechazada', 'respuesta', 1, '2025-10-11 20:39:44'),
+(18, 440, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada', 'respuesta', 1, '2025-10-11 20:41:44'),
+(20, 440, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA 2\' fue aceptada', 'respuesta', 1, '2025-10-11 21:16:42');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `solicitudes`
+--
+
+CREATE TABLE `solicitudes` (
+  `solicitud_id` int NOT NULL,
+  `usuario_id` int NOT NULL,
+  `equipo_id` int NOT NULL,
+  `estado` enum('pendiente','aceptada','rechazada') DEFAULT 'pendiente',
+  `fecha` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -274,7 +326,8 @@ INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, 
 (437, 'Alumno50 Administración', 'Administración', 'A8A', 'alumno50@ejemplo.com', '', 'pbkdf2:sha256:1000000$b3ZpDkSFwIYrCvh1$d9090fcd7dd322d1c583d8bea152a1171f4434515c5970e2910654b5c89c9fdf', 'user', '8', 'A', NULL),
 (438, 'Diego guillermo gonzales franco', 'Informática', '12312412', 'diego1001@alumnos.udg.mx', '38712398763', 'pbkdf2:sha256:1000000$QcM88zgzOUHs9D2o$142504c85d686329a793590b2a613143b4661267a65b8f0ecea166f0a62120d0', 'user', '6', 'B', NULL),
 (439, 'Sandra guzman hernandez ', 'Telecomunicaciones', '1234589', 'sandra.guzman@alumnos.udg.mx', '03912830912', 'pbkdf2:sha256:1000000$5vDI9asP6S2kcjjC$0677bb96c53517768f017bdce1ef434176e665b0d9955f988275058e37e141b5', 'user', '5', 'B', NULL),
-(440, 'Alexis leandro cuevas ', 'Informática', '123401', 'alexis1001@alumnos.udg.mx', '9023091321', 'pbkdf2:sha256:1000000$WuhvAHyiIxaNdfXl$515c8f447a66ddd1e5a468764b2742c6829d5a4abd519ca3065c1ec9f8975247', 'user', '6', 'B', 'YO alexis puedo lograr realizar las canvas de presentacion jutno a una base de conocimiento muy extructurada para programar');
+(440, 'Alexis leandro cuevas ', 'Informática', '123401', 'alexis1001@alumnos.udg.mx', '9023091321', 'pbkdf2:sha256:1000000$WuhvAHyiIxaNdfXl$515c8f447a66ddd1e5a468764b2742c6829d5a4abd519ca3065c1ec9f8975247', 'user', '6', 'B', 'YO alexis puedo lograr realizar las canvas de presentacion jutno a una base de conocimiento muy extructurada para programar'),
+(441, 'CACHETES HIJO DE PERRA ', 'Energías alternativas', '2371398', 'achetes1001@alumnos.udg.mx', '9023091322', 'pbkdf2:sha256:1000000$gxSpWwpWHBqQPX39$96b6d16d0ffc9ad213b391c9554942998aa273925de8690cde6fc79bdca3f297', 'user', '6', 'B', NULL);
 
 --
 -- Indexes for dumped tables
@@ -318,6 +371,21 @@ ALTER TABLE `integrantes_equipo`
   ADD KEY `equipo_id` (`equipo_id`);
 
 --
+-- Indexes for table `notificaciones`
+--
+ALTER TABLE `notificaciones`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `usuario_id` (`usuario_id`);
+
+--
+-- Indexes for table `solicitudes`
+--
+ALTER TABLE `solicitudes`
+  ADD PRIMARY KEY (`solicitud_id`),
+  ADD KEY `usuario_id` (`usuario_id`),
+  ADD KEY `equipo_id` (`equipo_id`);
+
+--
 -- Indexes for table `solicitudes_equipo`
 --
 ALTER TABLE `solicitudes_equipo`
@@ -347,25 +415,37 @@ ALTER TABLE `carreras`
 -- AUTO_INCREMENT for table `equipos`
 --
 ALTER TABLE `equipos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT for table `equipo_carreras`
 --
 ALTER TABLE `equipo_carreras`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
 
 --
 -- AUTO_INCREMENT for table `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=160;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=174;
 
 --
 -- AUTO_INCREMENT for table `integrantes_equipo`
 --
 ALTER TABLE `integrantes_equipo`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `notificaciones`
+--
+ALTER TABLE `notificaciones`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `solicitudes`
+--
+ALTER TABLE `solicitudes`
+  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `solicitudes_equipo`
@@ -377,7 +457,7 @@ ALTER TABLE `solicitudes_equipo`
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=441;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=442;
 
 --
 -- Constraints for dumped tables
@@ -409,28 +489,18 @@ ALTER TABLE `equipo_integrantes`
 ALTER TABLE `integrantes_equipo`
   ADD CONSTRAINT `integrantes_equipo_ibfk_1` FOREIGN KEY (`equipo_id`) REFERENCES `equipos` (`id`) ON DELETE CASCADE;
 
+--
+-- Constraints for table `notificaciones`
+--
+ALTER TABLE `notificaciones`
+  ADD CONSTRAINT `notificaciones_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
--- Tabla para solicitudes de equipos
-CREATE TABLE solicitudes (
-    solicitud_id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    equipo_id INT NOT NULL,
-    estado ENUM('pendiente', 'aceptada', 'rechazada') DEFAULT 'pendiente',
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (equipo_id) REFERENCES equipos(id) ON DELETE CASCADE
-);
-
-
-CREATE TABLE notificaciones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,          -- a quién va dirigida la notificación
-    mensaje VARCHAR(255) NOT NULL,    -- mensaje simple
-    tipo ENUM('solicitud','respuesta') NOT NULL, -- si es solicitud o respuesta
-    leida BOOLEAN DEFAULT FALSE,      -- para marcar si ya la vio
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-);
+--
+-- Constraints for table `solicitudes`
+--
+ALTER TABLE `solicitudes`
+  ADD CONSTRAINT `solicitudes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `solicitudes_ibfk_2` FOREIGN KEY (`equipo_id`) REFERENCES `equipos` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `solicitudes_equipo`

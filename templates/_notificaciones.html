@@ -1,0 +1,118 @@
+
+
+<ul class="list-group">
+{% if notificaciones %}
+    {% for n in notificaciones %}
+        <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap notificacion-item">
+            <div class="me-3">
+                <strong>{{ n.mensaje }}</strong><br>
+                <small class="text-muted">{{ n.fecha.strftime("%d/%m/%Y %H:%M") }}</small>
+<small class="text-muted">{{ n.fecha.strftime("%d/%m/%Y %H:%M") }}</small>
+
+
+            </div>
+
+            <div class="btn-group">
+                {% if n.tipo == 'solicitud' %}
+                    {# Si el usuario actual es el creador del equipo, puede aceptar o rechazar #}
+                    {% if session.usuario.id == n.creador_id %}
+                        <a href="{{ url_for('perfil', id=n.solicitante_id) }}" class="btn btn-info btn-sm">
+                            Ver perfil
+                        </a>
+<button class="btn btn-success btn-sm btn-aceptar"
+        data-solicitud="{{ n.solicitud_id }}"
+        data-usuario="{{ n.solicitante_id }}"
+        data-url="{{ url_for('aceptar_solicitud_modal', id=n.solicitud_id, usuario_id=n.solicitante_id) }}">
+    Aceptar
+</button>
+
+<button class="btn btn-danger btn-sm btn-rechazar"
+        data-solicitud="{{ n.solicitud_id }}"
+        data-usuario="{{ n.solicitante_id }}"
+        data-url="{{ url_for('rechazar_solicitud_admin', id=n.solicitud_id, usuario_id=n.solicitante_id) }}">
+    Rechazar
+</button>
+
+
+
+
+                    {# Si el usuario actual fue quien envió la solicitud #}
+                    {% elif session.usuario.id == n.solicitante_id %}
+                        {% if n.solicitud_estado == 'pendiente' %}
+                            <span class="badge bg-secondary">En revisión</span>
+                        {% elif n.solicitud_estado == 'aceptada' %}
+                            <span class="badge bg-success">Aceptada</span>
+                        {% elif n.solicitud_estado == 'rechazada' %}
+                            <span class="badge bg-danger">Rechazada</span>
+                        {% endif %}
+                    {% endif %}
+
+                {% elif n.tipo == 'respuesta' %}
+                    {% if 'aceptada' in n.mensaje.lower() %}
+                        <span class="badge bg-success">Aceptada</span>
+                    {% elif 'rechazada' in n.mensaje.lower() %}
+                        <span class="badge bg-danger">Rechazada</span>
+                    {% else %}
+                        <span class="badge bg-info">Info</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </li>
+    {% endfor %}
+{% else %}
+    <li class="list-group-item text-center text-muted">No hay notificaciones.</li>
+{% endif %}
+</ul>
+
+
+<script>
+document.addEventListener('click', async (e) => {
+    // detectar clicks sobre los botones
+    if (e.target.classList.contains('btn-aceptar') || e.target.classList.contains('btn-rechazar')) {
+        const btn = e.target;
+        const solicitudId = btn.dataset.solicitud;
+        if (!solicitudId) {
+            console.error('Falta data-solicitud en el botón');
+            return;
+        }
+
+        const nuevoEstado = btn.classList.contains('btn-aceptar') ? 'aceptada' : 'rechazada';
+
+        try {
+            btn.disabled = true;
+            const resp = await fetch('/notificaciones/actualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ solicitud_id: solicitudId, estado: nuevoEstado })
+            });
+
+            const data = await resp.json().catch(() => null);
+
+            if (resp.ok && data && data.success) {
+                // reemplaza el li completo para mostrar estado actualizado
+                const li = btn.closest('li');
+                li.innerHTML = `
+                    <div class="me-3">
+                        <strong>Solicitud ${nuevoEstado === 'aceptada' ? 'aceptada ✅' : 'rechazada ❌'}</strong><br>
+                        <small class="text-muted">Actualizado</small>
+                    </div>
+                    <span class="badge ${nuevoEstado === 'aceptada' ? 'bg-success' : 'bg-danger'}">
+                        ${nuevoEstado.charAt(0).toUpperCase() + nuevoEstado.slice(1)}
+                    </span>
+                `;
+            } else {
+                const msg = (data && data.message) ? data.message : 'Error al actualizar la solicitud';
+                alert(msg);
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error en la petición (ver consola)');
+            btn.disabled = false;
+        }
+    }
+});
+</script>
+
+
+
