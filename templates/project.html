@@ -11,53 +11,60 @@
 </head>
 <body>
 
-<nav id="mainNavbar" 
-     class="navbar navbar-expand-lg custom-navbar shadow-sm fixed-top py-4 {% if usuario %}logged-in{% endif %}">
-  <div class="container-fluid position-relative">
+<nav id="mainNavbar" class="navbar navbar-expand-lg custom-navbar fixed-top shadow-sm py-3">
+  <div class="container-fluid d-flex align-items-center justify-content-between px-4">
 
-    <!-- Marca centrada -->
-    <a class="navbar-brand letra1 fw-bold" href="/">PaitZone</a>
+    <!-- LOGO IZQUIERDA -->
+    <a class="navbar-brand fw-bold letra1" href="/">PaitZone</a>
 
-    <!-- Botón hamburguesa -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+    <!-- BOTÓN HAMBURGUESA -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
       aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+      <i class="fa-solid fa-bars" style="color: #fff; font-size: 1.4rem;"></i>
     </button>
 
-    <!-- Contenido colapsable -->
-    <div class="collapse navbar-collapse" id="navbarContent">
+    <!-- CONTENIDO -->
+    <div class="collapse navbar-collapse justify-content-center" id="navbarContent">
+      <ul class="navbar-nav gap-4">
+        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" href="/sobre">Sobre Nosotros</a></li>
+        <li class="nav-item"><a class="nav-link" href="/proyectos">Proyectos</a></li>
+        <li class="nav-item"><a class="nav-link" href="/contacto">Contacto</a></li>
+      </ul>
+    </div>
 
-      {% if usuario %}
-      <div class="ms-auto d-flex align-items-center navbar-right fade-links show-links">
+    <!-- DERECHA (BOTONES DE USUARIO) -->
+    <div class="d-flex align-items-center navbar-right">
+{% if usuario %}
+    <span class="username me-3 text-white">Hola, {{ usuario['nombre_completo'] }}</span>
 
-        <!-- Nombre usuario -->
-        <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
+<!-- Botón de Notificaciones sin icono -->
+<a href="#" data-bs-toggle="modal" data-bs-target="#notificacionesModal" class="btn btn-light me-3">
+    Notificaciones
+    {% if notificaciones_pendientes > 0 %}
+        <span class="badge bg-danger">{{ notificaciones_pendientes }}</span>
+    {% endif %}
+</a>
 
-        <!-- Proyecto -->
-        {% if mi_proyecto %}
-        <a href="{{ url_for('mi_equipo') }}" class="btn btn-cafe me-2">Ver mi proyecto</a>
-        {% else %}
-        <a href="{{ url_for('create_project') }}" class="btn btn-cafe me-2">Crear proyecto</a>
-        {% endif %}
 
-        <!-- Logout -->
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
-          <i class="fa-solid fa-right-from-bracket" style="font-size: 1rem; color: #ca8205;"></i>
-        </a>
-      </div>
 
-      {% else %}
-      <div class="ms-auto navbar-right fade-links">
-        <!-- Login -->
-        <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2"><i class="fa-solid fa-user"></i></a>
-        <!-- Registro -->
-        <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card"></i></a>
-      </div>
-      {% endif %}
 
+    {% if mi_proyecto %}
+      <a href="{{ url_for('mi_equipo') }}" class="btn btn-cafe me-2">Mi Proyecto</a>
+    {% else %}
+      <a href="{{ url_for('create_project') }}" class="btn btn-cafe me-2">Nuevo Proyecto</a>
+    {% endif %}
+    <!-- BOTÓN MI PERFIL -->
+    <a href="{{ url_for('perfil', id=usuario['id']) }}" class="btn btn-outline-light me-2">Mi perfil</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-light"><i class="fa-solid fa-right-from-bracket"></i></a>
+{% else %}
+    <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2"><i class="fa-solid fa-user"></i></a>
+    <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card"></i></a>
+{% endif %}
     </div>
   </div>
 </nav>
+
 
 <br><br>
 
@@ -159,34 +166,131 @@
 
 
     <!-- MOSTRAR EQUIPOS DISPONIBLES SOLO SI NO HAY PROYECTO -->
-    {% if not mi_proyecto %}
-        <h2 class="mb-4 text-center" style="color: rgb(255, 249, 249);">Equipos Disponibles</h2><br>
-        <div class="row">
-            {% for equipo in equipos %}
-            <div class="col-md-6 col-lg-4">
-                <div class="card project-card mb-4 shadow-sm" style="background-color: rgba(0, 0, 0, 0.844);">
-                    <div class="card-body" style="color: white;">
-                        <h5 class="card-title">Proyecto: {{ equipo.nombre_proyecto }}</h5>
-                        <p class="card-text">{{ equipo.descripcion }}</p>
-                        <ul>
-                            <li>Integrantes actuales: {{ equipo.integrantes | length }} / {{ equipo.max_integrantes }}</li>
-                            <li>Carreras necesarias: {{ equipo.carreras_necesarias | join(', ') }}</li>
-                        </ul>
-                        {% if usuario %}
-                        <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
-                        {% else %}
-                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Inicia sesión para unirte</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+{% if not mi_proyecto %}
+<h2 class="mb-4 text-center" style="color: rgb(255, 249, 249);">Equipos Disponibles</h2><br>
+<div class="row">
+  {% for equipo in equipos %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card project-card mb-4 shadow-sm" style="background-color: rgba(0, 0, 0, 0.844);">
+      <div class="card-body" style="color: white;">
+        <h5 class="card-title">Proyecto: {{ equipo.nombre_proyecto }}</h5>
+        <p class="card-text">{{ equipo.descripcion }}</p>
+        <ul>
+          <li>Integrantes actuales: {{ equipo.integrantes | length }} / {{ equipo.max_integrantes }}</li>
+          <li>Carreras necesarias: {{ equipo.carreras_necesarias | join(', ') }}</li>
+          <li>Privacidad: 
+            {% if equipo.privacidad == 'publico' %}
+              <span class="badge bg-success">Público</span>
             {% else %}
-            <p class="text-center" style="color: red;">No hay equipos disponibles en este momento.</p>
-            {% endfor %}
-        </div>
-    {% endif %}
+              <span class="badge bg-warning text-dark">Privado</span>
+            {% endif %}
+          </li>
+        </ul>
+
+        {% if usuario %}
+          {% if equipo.privacidad == 'publico' %}
+            <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
+          {% else %}
+            <a href="{{ url_for('ver_solicitudes_equipo', equipo_id=equipo.id) }}" class="btn btn-outline-warning w-100">Enviar solicitud</a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Inicia sesión para unirte</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p class="text-center" style="color: red;">No hay equipos disponibles en este momento.</p>
+  {% endfor %}
+</div>
+{% endif %}
+
 
 </div>
+
+
+<!-- Modal de notificaciones -->
+<div class="modal fade" id="notificacionesModal" tabindex="-1" aria-labelledby="notificacionesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="notificacionesModalLabel">Notificaciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Solicitudes recibidas (admin) -->
+        <h6 class="mb-3">Solicitudes recibidas</h6>
+        {% if recibidas %}
+          <ul class="list-group mb-4">
+          {% for s in recibidas %}
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+              <div>
+                <strong>{{ s.nombre_completo }}</strong> - {{ s.carrera }} {{ s.grado }}° {{ s.grupo }}
+              </div>
+              <div class="mt-2 mt-md-0">
+                <a href="{{ url_for('perfil', id=s.usuario_id, origen='notificaciones') }}" class="btn btn-sm btn-secondary me-1 mb-1">Ver perfil</a>
+                <a href="{{ url_for('aceptar_solicitud_modal', id=s.solicitud_id, usuario_id=s.usuario_id) }}" class="btn btn-sm btn-success me-1 mb-1">Aceptar</a>
+                <a href="{{ url_for('rechazar_solicitud_admin', id=s.solicitud_id) }}" class="btn btn-sm btn-danger mb-1">Rechazar</a>
+              </div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">No tienes solicitudes pendientes.</p>
+        {% endif %}
+
+        <!-- Solicitudes enviadas -->
+        <h6 class="mb-3">Solicitudes enviadas</h6>
+        {% if enviadas %}
+          <ul class="list-group mb-4">
+          {% for s in enviadas %}
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+              <div>
+                <strong>{{ s.nombre_proyecto }}</strong> - Estado: {{ s.estado|capitalize }}
+              </div>
+              <div class="mt-2 mt-md-0">
+                {% if s.estado == 'aceptada' %}
+                  <a href="{{ url_for('mi_equipo', id=s.equipo_id) }}" class="btn btn-sm btn-primary">Ver equipo</a>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">No has enviado solicitudes.</p>
+        {% endif %}
+
+        <!-- Notificaciones generales -->
+        <h6 class="mb-3">Notificaciones recientes</h6>
+        {% if notificaciones %}
+          <ul class="list-group">
+          {% for n in notificaciones %}
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+              <div>{{ n.mensaje }}</div>
+              <small class="text-muted">{{ n.fecha }}</small>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">No tienes notificaciones.</p>
+        {% endif %}
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var notiModal = document.getElementById('notificacionesModal');
+    notiModal.addEventListener('show.bs.modal', function (event) {
+      fetch('/notificaciones/marcar_leidas');
+    });
+  </script>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/js/formularioequipo.js"></script>

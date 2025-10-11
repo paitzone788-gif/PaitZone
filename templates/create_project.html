@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-    <link rel="stylesheet" href="/static/css/botones.css">
-    <link rel="stylesheet" href="/static/css/nav-bar.css">
-    <link rel="stylesheet" href="/static/css/fondo.css">
-
+<link rel="stylesheet" href="/static/css/botones.css">
+<link rel="stylesheet" href="/static/css/nav-bar.css">
+<link rel="stylesheet" href="/static/css/fondo.css">
 
 <div class="container mt-4">
   <h2>Crear nuevo proyecto</h2>
   <form method="post">
+    <div class="alert alert-info">
+  Nota: El creador del equipo será automáticamente el administrador y podrá aceptar o rechazar solicitudes.
+</div>
+
     <div class="mb-3">
       <label for="nombre" class="form-label">Nombre del proyecto</label>
       <input type="text" class="form-control" id="nombre" name="nombre" required />
@@ -33,18 +36,22 @@
       <input type="text" class="form-control" id="asesor" name="asesor" required placeholder="Ej: Juan Pérez García">
     </div>
 
+    <div class="mb-3">
+      <label for="privacidad" class="form-label">Privacidad del equipo</label>
+      <select class="form-select" id="privacidad" name="privacidad" required>
+        <option value="publico" selected>Público (cualquiera puede unirse)</option>
+        <option value="privado">Privado (requiere solicitud)</option>
+      </select>
+    </div>
 
     <div class="mb-3">
       <label class="form-label">Carreras necesarias (máximo 6)</label><br />
       {% for carrera in carreras %}
-        <div class="form-check form-check-inline mb-2">
-          <input class="form-check-input carrera-checkbox" type="checkbox" name="carreras" id="{{ carrera }}" value="{{ carrera }}" />
-          <label class="form-check-label" for="{{ carrera }}">{{ carrera }}</label>
-          
-          <!-- Input para cantidad de integrantes de esta carrera -->
-          <input type="number" class="form-control d-inline-block ms-2 cantidad-input" name="cantidad_carreras" min="0" value="0" style="width: 80px;" placeholder="Cantidad">
-
-        </div>
+      <div class="form-check form-check-inline mb-2">
+        <input class="form-check-input carrera-checkbox" type="checkbox" name="carreras" id="{{ carrera }}" value="{{ carrera }}" />
+        <label class="form-check-label" for="{{ carrera }}">{{ carrera }}</label>
+        <input type="number" class="form-control d-inline-block ms-2 cantidad-input" name="cantidad_carreras" min="0" value="0" style="width: 80px;" placeholder="Cantidad">
+      </div>
       {% endfor %}
     </div>
 
@@ -55,10 +62,4 @@
 </div>
 
 <script src="/static/js/animacion de nav-bar.js"></script>
-
-
-
-<!-- Contenedor de toasts flotantes -->
-
-
 {% endblock %}

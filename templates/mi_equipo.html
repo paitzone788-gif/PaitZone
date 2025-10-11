@@ -66,10 +66,11 @@
             <p class="card-text"><strong>Carreras necesarias:</strong> {{ equipo.carreras_necesarias | join(', ') }}</p>
             
             <!-- Botón para salir del equipo -->
-            <a href="{{ url_for('salir', equipo_id=equipo.id) }}" class="btn btn-danger mt-2"
-               onclick="return confirm('¿Seguro que quieres salir del equipo?')">
-                Salir del equipo
-            </a>
+<a href="{{ url_for('salir', equipo_id=equipo.id) }}" class="btn btn-danger mt-2"
+   onclick="return confirm('¿Seguro que quieres salir del equipo?')">
+    Salir del equipo
+</a>
+
         </div>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#integrantesModal">
   enviar mensaje a los integrantes
@@ -95,17 +96,21 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <ul class="list-group">
+<ul class="list-group">
 {% for integrante in equipo.integrantes %}
   <li class="list-group-item d-flex justify-content-between align-items-center">
     👤 {{ integrante.nombre_completo }} - {{ integrante.carrera }}
-    {% if integrante.telefono %}
-      <a href="https://wa.me/{{ integrante.telefono }}" target="_blank" class="btn btn-success btn-sm">💬 WhatsApp</a>
-    {% endif %}
+    <div>
+      {% if integrante.telefono %}
+        <a href="https://wa.me/{{ integrante.telefono }}" target="_blank" class="btn btn-success btn-sm me-1">💬 WhatsApp</a>
+      {% endif %}
+      <!-- BOTÓN VER PERFIL -->
+      <a href="{{ url_for('perfil', id=integrante.id) }}" class="btn btn-info btn-sm">Ver perfil</a>
+    </div>
   </li>
 {% endfor %}
+</ul>
 
-        </ul>
       </div>
     </div>
   </div>

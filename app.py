@@ -2,6 +2,42 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_mysqldb import MySQL
 from functools import wraps
 from werkzeug.security import generate_password_hash
+from flask import g
+from MySQLdb.cursors import DictCursor
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.secret_key = "supersecretkey"
+
+# Configuración MySQL directa para tus queries actuales
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'mysql'
+app.config['MYSQL_DB'] = 'Entrelaza'
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+
+mysql = MySQL(app)
+
+# Configuración SQLAlchemy para el modelo Notificacion
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql@localhost/Entrelaza'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+
+# Modelo
+class Notificacion(db.Model):
+    __tablename__ = 'notificaciones'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
+    mensaje = db.Column(db.String(255), nullable=False)
+    tipo = db.Column(db.Enum('solicitud','respuesta'), nullable=False)
+    leida = db.Column(db.Boolean, default=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -33,7 +69,7 @@ def index():
 
     # --- Traer equipos según usuario ---
     if usuario:
-        # Solo equipos que necesiten la carrera del usuario
+        # Solo equipos que necesiten la carrera del usuario (tanto públicos como privados)
         cursor.execute('''
             SELECT DISTINCT e.*, 
                    (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
@@ -43,11 +79,12 @@ def index():
             WHERE c.nombre = %s
         ''', (usuario['carrera'],))
     else:
-        # Visitante ve todos
+        # Visitante ve solo equipos públicos
         cursor.execute('''
             SELECT e.*, 
                    (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
             FROM equipos e
+            WHERE e.privacidad = 'publico'
         ''')
 
     equipos = cursor.fetchall()
@@ -126,11 +163,6 @@ def index():
         mi_proyecto=mi_proyecto
     )
 
-
-
-
-
-
 # ruta admin
 @app.route('/admin')
 @admin_required
@@ -140,9 +172,6 @@ def admin_panel():
     carreras = [row['nombre'] for row in cursor.fetchall()]
     cursor.close()
     return render_template('admin.html', carreras=carreras)
-
-
-
 
 # tabla de usuarios
 @app.route('/admin/usuarios')
@@ -234,8 +263,6 @@ def agregar_usuario():
 
     return render_template('agregar_usuario.html')
 
-
-
 # Registro de usuario
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -281,10 +308,6 @@ def register():
 
     return render_template("register.html")
 
-
-
-
-# Login
 # Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -328,7 +351,6 @@ def login():
 
     return render_template("login.html")
 
-
 # agregar equipo admin
 @app.route('/admin/agregar_equipo', methods=['GET', 'POST'])
 @admin_required
@@ -341,11 +363,12 @@ def agregar_equipo():
         max_integrantes = int(request.form['max_integrantes'])
         integrantes_raw = request.form.get('integrantes', '')
         carreras_seleccionadas = request.form.getlist('carreras')
+        privacidad = request.form.get('privacidad', 'publico')  # --- NUEVO ---
 
         # Insertar equipo
         cursor.execute(
-            "INSERT INTO equipos(nombre_proyecto, descripcion, max_integrantes, creador_id) VALUES (%s,%s,%s,%s)",
-            (nombre, descripcion, max_integrantes, session['usuario']['id'])
+            "INSERT INTO equipos(nombre_proyecto, descripcion, max_integrantes, creador_id, privacidad) VALUES (%s,%s,%s,%s,%s)",
+            (nombre, descripcion, max_integrantes, session['usuario']['id'], privacidad)
         )
         equipo_id = cursor.lastrowid
 
@@ -387,8 +410,6 @@ def agregar_equipo():
     cursor.close()
     return render_template('agregar_equipo.html', carreras=carreras)
 
-
-# Mostrar proyecto del usuario
 # Mostrar proyecto del usuario
 @app.route('/mi_equipo')
 def mi_equipo():
@@ -401,7 +422,7 @@ def mi_equipo():
 
     # Buscar proyecto del usuario, incluyendo asesor
     cursor.execute('''
-        SELECT e.id, e.nombre_proyecto, e.descripcion, e.max_integrantes, e.asesor
+        SELECT e.id, e.nombre_proyecto, e.descripcion, e.max_integrantes, e.asesor, e.privacidad, e.creador_id
         FROM equipos e
         JOIN equipo_integrantes ei ON e.id = ei.equipo_id
         WHERE ei.usuario_id = %s
@@ -416,16 +437,18 @@ def mi_equipo():
 
     # Integrantes del equipo con grado y grupo incluidos
     cursor.execute('''
-        SELECT u.nombre_completo AS nombre_completo,
-               u.carrera,
-               u.telefono,
-               u.grado,
-               u.grupo
-        FROM equipo_integrantes ei
-        JOIN usuarios u ON ei.usuario_id = u.id
-        WHERE ei.equipo_id = %s
-    ''', (equipo['id'],))
+    SELECT u.id, 
+           u.nombre_completo,
+           u.carrera,
+           u.telefono,
+           u.grado,
+           u.grupo
+    FROM equipo_integrantes ei
+    JOIN usuarios u ON ei.usuario_id = u.id
+    WHERE ei.equipo_id = %s
+''', (equipo['id'],))
     equipo['integrantes'] = cursor.fetchall()
+
 
     # Carreras necesarias
     cursor.execute('''
@@ -439,9 +462,6 @@ def mi_equipo():
     cursor.close()
     return render_template('mi_equipo.html', usuario=usuario, equipo=equipo)
 
-
-
-
 # Logout
 @app.route('/logout')
 def logout():
@@ -450,8 +470,6 @@ def logout():
     flash("Has iniciado sesión correctamente", "success")
     return redirect(url_for('index'))
 
-
-# Crear proyecto
 # Crear proyecto
 @app.route('/create_project', methods=['GET', 'POST'])
 def create_project():
@@ -483,15 +501,16 @@ def create_project():
         asesor = request.form.get('asesor', '').strip()  # <- nuevo campo
         integrantes_raw = request.form.get('integrantes', '')
         carreras_seleccionadas = request.form.getlist('carreras')
+        privacidad = request.form.get('privacidad', 'publico')  # --- NUEVO ---
 
         # Limitar el número de carreras al máximo permitido
         carreras_seleccionadas = carreras_seleccionadas[:4]
 
-        # Crear el equipo con asesor
+        # Crear el equipo con asesor y privacidad
         cursor.execute(
-            "INSERT INTO equipos (nombre_proyecto, descripcion, max_integrantes, creador_id, asesor) "
-            "VALUES (%s,%s,%s,%s,%s)",
-            (nombre, descripcion, max_integrantes, usuario['id'], asesor)
+            "INSERT INTO equipos (nombre_proyecto, descripcion, max_integrantes, creador_id, asesor, privacidad) "
+            "VALUES (%s,%s,%s,%s,%s,%s)",
+            (nombre, descripcion, max_integrantes, usuario['id'], asesor, privacidad)
         )
         equipo_id = cursor.lastrowid
 
@@ -550,13 +569,8 @@ def create_project():
     cursor.close()
     return render_template("create_project.html", carreras=carreras)
 
-
-
-
-
-
-# Unirse a proyecto
-@app.route('/unirse/<int:equipo_id>')
+# Unirse a proyecto (ahora respeta privacidad: público -> se une, privado -> crea solicitud)
+@app.route('/unirse/<int:equipo_id>', methods=['GET', 'POST'])
 def unirse(equipo_id):
     if 'usuario' not in session:
         flash("Debes iniciar sesión para unirte a un equipo", "warning")
@@ -564,29 +578,197 @@ def unirse(equipo_id):
 
     usuario = session['usuario']
     cursor = mysql.connection.cursor()
+
+    # Si ya pertenece a un equipo, no puede unirse
     cursor.execute('SELECT * FROM equipo_integrantes WHERE usuario_id = %s', (usuario['id'],))
     if cursor.fetchone():
         flash("Ya perteneces a un equipo y no puedes unirte a otro", "danger")
         cursor.close()
         return redirect(url_for('index'))
 
-    cursor.execute('INSERT INTO equipo_integrantes(equipo_id, usuario_id) VALUES (%s, %s)', (equipo_id, usuario['id']))
+    # Obtener info del equipo
+    cursor.execute('SELECT * FROM equipos WHERE id = %s', (equipo_id,))
+    equipo = cursor.fetchone()
+    if not equipo:
+        flash("Equipo no encontrado", "danger")
+        cursor.close()
+        return redirect(url_for('index'))
+
+    # Conteo de integrantes actuales
+    cursor.execute('SELECT COUNT(*) AS total FROM equipo_integrantes WHERE equipo_id = %s', (equipo_id,))
+    conteo = cursor.fetchone()['total']
+    if conteo >= equipo['max_integrantes']:
+        flash("El equipo ya está lleno", "warning")
+        cursor.close()
+        return redirect(url_for('index'))
+
+    if equipo.get('privacidad') == 'publico':
+        # Unirse directamente
+        cursor.execute('INSERT INTO equipo_integrantes(equipo_id, usuario_id) VALUES (%s, %s)', (equipo_id, usuario['id']))
+        mysql.connection.commit()
+        cursor.close()
+        flash("¡Te uniste al equipo!", "success")
+        return redirect(url_for('index'))
+    else:
+        # Equipo privado -> crear solicitud si no existe
+        cursor.execute('SELECT * FROM solicitudes_equipo WHERE usuario_id=%s AND equipo_id=%s AND estado="pendiente"', (usuario['id'], equipo_id))
+        if cursor.fetchone():
+            flash("Ya enviaste una solicitud y está pendiente", "info")
+            cursor.close()
+            return redirect(url_for('index'))
+
+        cursor.execute('INSERT INTO solicitudes_equipo (usuario_id, equipo_id) VALUES (%s, %s)', (usuario['id'], equipo_id))
+        mysql.connection.commit()
+        cursor.close()
+        flash("Solicitud enviada. El creador del equipo la revisará.", "success")
+        return redirect(url_for('index'))
+
+# Cancelar solicitud (el usuario que la envió)
+@app.route('/cancelar_solicitud/<int:equipo_id>', methods=['POST', 'GET'])
+def cancelar_solicitud(equipo_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+    cursor.execute('DELETE FROM solicitudes_equipo WHERE usuario_id=%s AND equipo_id=%s AND estado="pendiente"', (usuario['id'], equipo_id))
     mysql.connection.commit()
     cursor.close()
-    flash("¡Te uniste a un equipo!", "success")
+    flash("Solicitud cancelada", "info")
     return redirect(url_for('index'))
 
+# Ver solicitudes de un equipo (solo creador del equipo)
+@app.route('/equipo/<int:equipo_id>/solicitudes')
+def ver_solicitudes_equipo(equipo_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
 
-# Equipos disponibles
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT creador_id, nombre_proyecto FROM equipos WHERE id=%s', (equipo_id,))
+    equipo = cursor.fetchone()
+    if not equipo:
+        cursor.close()
+        flash("Equipo no encontrado", "danger")
+        return redirect(url_for('index'))
+
+    # Solo el creador puede ver solicitudes
+    if equipo['creador_id'] != usuario['id']:
+        cursor.close()
+        flash("No tienes permisos para ver las solicitudes de este equipo", "danger")
+        return redirect(url_for('index'))
+
+    cursor.execute('''
+        SELECT s.id, s.usuario_id, s.fecha, u.nombre_completo, u.carrera, u.grado, u.grupo
+        FROM solicitudes_equipo s
+        JOIN usuarios u ON s.usuario_id = u.id
+        WHERE s.equipo_id = %s AND s.estado = 'pendiente'
+        ORDER BY s.fecha ASC
+    ''', (equipo_id,))
+    solicitudes = cursor.fetchall()
+    cursor.close()
+    return render_template('solicitudes_equipo.html', solicitudes=solicitudes, equipo_id=equipo_id, equipo_nombre=equipo['nombre_proyecto'])
+
+# Aceptar solicitud (solo creador)
+@app.route('/equipo/aceptar_solicitud/<int:solicitud_id>', methods=['POST'])
+def aceptar_solicitud(solicitud_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT * FROM solicitudes_equipo WHERE id=%s', (solicitud_id,))
+    solicitud = cursor.fetchone()
+    if not solicitud:
+        cursor.close()
+        flash("Solicitud no encontrada", "danger")
+        return redirect(url_for('index'))
+
+    cursor.execute('SELECT * FROM equipos WHERE id=%s', (solicitud['equipo_id'],))
+    equipo = cursor.fetchone()
+    if equipo['creador_id'] != usuario['id']:
+        cursor.close()
+        flash("No tienes permisos para aceptar esta solicitud", "danger")
+        return redirect(url_for('index'))
+
+    # Verificar espacio
+    cursor.execute('SELECT COUNT(*) AS total FROM equipo_integrantes WHERE equipo_id = %s', (equipo['id'],))
+    total = cursor.fetchone()['total']
+    if total >= equipo['max_integrantes']:
+        cursor.execute('UPDATE solicitudes_equipo SET estado=%s WHERE id=%s', ('rechazada', solicitud_id))
+        mysql.connection.commit()
+        cursor.close()
+        flash("No se puede aceptar: el equipo ya está lleno", "warning")
+        return redirect(url_for('ver_solicitudes_equipo', equipo_id=equipo['id']))
+
+    # Insertar en integrantes y actualizar solicitud a aceptada
+    cursor.execute('INSERT INTO equipo_integrantes (equipo_id, usuario_id) VALUES (%s, %s)', (equipo['id'], solicitud['usuario_id']))
+    cursor.execute('UPDATE solicitudes_equipo SET estado=%s WHERE id=%s', ('aceptada', solicitud_id))
+    mysql.connection.commit()
+    cursor.close()
+    flash("Solicitud aceptada y usuario agregado al equipo", "success")
+    return redirect(url_for('ver_solicitudes_equipo', equipo_id=equipo['id']))
+
+# Rechazar solicitud (solo creador)
+@app.route('/equipo/rechazar_solicitud/<int:solicitud_id>', methods=['POST'])
+def rechazar_solicitud(solicitud_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT * FROM solicitudes_equipo WHERE id=%s', (solicitud_id,))
+    solicitud = cursor.fetchone()
+    if not solicitud:
+        cursor.close()
+        flash("Solicitud no encontrada", "danger")
+        return redirect(url_for('index'))
+
+    cursor.execute('SELECT * FROM equipos WHERE id=%s', (solicitud['equipo_id'],))
+    equipo = cursor.fetchone()
+    if equipo['creador_id'] != usuario['id']:
+        cursor.close()
+        flash("No tienes permisos para rechazar esta solicitud", "danger")
+        return redirect(url_for('index'))
+
+    cursor.execute('UPDATE solicitudes_equipo SET estado=%s WHERE id=%s', ('rechazada', solicitud_id))
+    mysql.connection.commit()
+    cursor.close()
+    flash("Solicitud rechazada", "info")
+    return redirect(url_for('ver_solicitudes_equipo', equipo_id=equipo['id']))
+
+# Equipos disponibles (arreglado para que funcione)
 @app.route('/equipos_disponibles')
 def equipos_disponibles():
     if 'usuario' not in session:
         flash("Debes iniciar sesión para ver los equipos", "warning")
         return redirect(url_for('login'))
     usuario = session['usuario']
-    # Aquí va tu lógica para filtrar equipos según la carrera del usuario
-    # ...
-    return render_template('equipos_disponibles.html', usuario=usuario, equipos=equipos)
+    cursor = mysql.connection.cursor()
+
+    # Traer equipos que necesitan la carrera del usuario (públicos y privados; join request separado)
+    cursor.execute('''
+        SELECT e.*, (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
+        FROM equipos e
+        JOIN equipo_carreras ec ON e.id = ec.equipo_id
+        JOIN carreras c ON ec.carrera_id = c.id
+        WHERE c.nombre = %s
+    ''', (usuario['carrera'],))
+    equipos = cursor.fetchall()
+
+    # Filtrar como en index
+    filtrados = []
+    for eq in equipos:
+        cursor.execute('SELECT 1 FROM equipo_integrantes WHERE equipo_id = %s AND usuario_id = %s', (eq['id'], usuario['id']))
+        pertenece = cursor.fetchone()
+        if eq['integrantes_actuales'] < eq['max_integrantes'] or pertenece:
+            filtrados.append(eq)
+    cursor.close()
+    return render_template('equipos_disponibles.html', usuario=usuario, equipos=filtrados)
 
 # Salir de equipo
 @app.route('/salir/<int:equipo_id>')
@@ -623,6 +805,258 @@ def salir(equipo_id):
     
     cursor.close()
     return redirect(url_for('index'))
+
+# Ver perfil de usuario
+@app.route('/perfil/<int:id>')
+def perfil(id):
+    origen = request.args.get('origen', 'index')  # por defecto 'index'
+    
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT id, nombre_completo, carrera, grado, grupo, descripcion FROM usuarios WHERE id=%s", (id,))
+    usuario_perfil = cursor.fetchone()
+    cursor.close()
+
+    if not usuario_perfil:
+        flash("Usuario no encontrado", "danger")
+        return redirect(url_for('index'))
+
+    usuario_sesion = session.get('usuario')
+    return render_template("perfil.html", usuario=usuario_sesion, perfil=usuario_perfil, origen=origen)
+
+
+
+# Editar perfil (solo propio)
+@app.route('/editar_perfil', methods=['GET', 'POST'])
+def editar_perfil():
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+
+    if request.method == 'POST':
+        descripcion = request.form.get('descripcion', '')
+        cursor.execute("UPDATE usuarios SET descripcion=%s WHERE id=%s", (descripcion, usuario['id']))
+        mysql.connection.commit()
+        cursor.close()
+
+        # Actualizar la sesión
+        session['usuario']['descripcion'] = descripcion
+        flash("Perfil actualizado", "success")
+        return redirect(url_for('perfil', id=usuario['id']))
+
+    # GET: mostrar formulario con descripción actual
+    cursor.execute("SELECT descripcion FROM usuarios WHERE id=%s", (usuario['id'],))
+    descripcion = cursor.fetchone()['descripcion']
+    cursor.close()
+    return render_template("editar_perfil.html", descripcion=descripcion, usuario=usuario)
+
+
+# ---------- RUTA NOTIFICACIONES (para la modal) ----------
+@app.route("/notificaciones")
+def notificaciones():
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["usuario_id"]
+    usuario = session["usuario"]
+
+    cursor = mysql.connection.cursor()
+
+    # Traer solicitudes recibidas (pendientes) si es admin
+    cursor.execute("""
+        SELECT s.id AS solicitud_id, u.id AS usuario_id, u.nombre_completo, u.carrera, u.grado, u.grupo, e.nombre_proyecto
+        FROM solicitudes s
+        JOIN usuarios u ON u.id = s.usuario_id
+        JOIN equipos e ON e.id = s.equipo_id
+        JOIN equipo_integrantes ei ON ei.equipo_id = e.id
+        WHERE ei.usuario_id = %s AND ei.es_admin=TRUE AND s.estado='pendiente'
+    """, (usuario_id,))
+    recibidas = cursor.fetchall()
+
+    # Solicitudes enviadas por el usuario
+    cursor.execute("""
+        SELECT s.id AS solicitud_id, s.estado, s.equipo_id, e.nombre_proyecto
+        FROM solicitudes s
+        JOIN equipos e ON e.id = s.equipo_id
+        WHERE s.usuario_id=%s
+    """, (usuario_id,))
+    enviadas = cursor.fetchall()
+
+    # Traer notificaciones pendientes
+    cursor.execute("""
+        SELECT *
+        FROM notificaciones
+        WHERE usuario_id=%s AND leido=FALSE
+        ORDER BY fecha DESC
+    """, (usuario_id,))
+    notificaciones = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "navbar.html",
+        usuario=usuario,
+        recibidas=recibidas,
+        enviadas=enviadas,
+        notificaciones=notificaciones
+    )
+
+
+
+@app.route("/notificaciones/marcar_leidas")
+def marcar_notificaciones_leidas():
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["usuario_id"]
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE notificaciones SET leido=TRUE WHERE usuario_id=%s", (usuario_id,))
+    mysql.connection.commit()
+    cursor.close()
+    return '', 204
+
+
+# ---------- ACEPTAR SOLICITUD ----------
+@app.route("/aceptar_solicitud_modal/<int:id>/<int:usuario_id>")
+def aceptar_solicitud_modal(id, usuario_id):
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    cursor = mysql.connection.cursor()
+    # Validar admin
+    cursor.execute("""
+        SELECT s.equipo_id
+        FROM solicitudes s
+        JOIN equipo_integrantes ei ON ei.equipo_id = s.equipo_id
+        WHERE s.id = %s AND ei.usuario_id = %s AND ei.es_admin = TRUE
+    """, (id, session["usuario_id"]))
+    solicitud = cursor.fetchone()
+
+    if solicitud:
+        # Actualizar solicitud
+        cursor.execute("UPDATE solicitudes SET estado='aceptada' WHERE id=%s", (id,))
+        # Agregar al equipo
+        cursor.execute(
+            "INSERT INTO equipo_integrantes (equipo_id, usuario_id, es_admin) VALUES (%s, %s, FALSE)",
+            (solicitud['equipo_id'], usuario_id)
+        )
+        # Crear notificación
+        mensaje = "Tu solicitud fue aceptada"
+        cursor.execute(
+            'INSERT INTO notificaciones (usuario_id, mensaje, tipo) VALUES (%s, %s, "respuesta")',
+            (usuario_id, mensaje)
+        )
+
+        mysql.connection.commit()
+        flash("Solicitud aceptada correctamente", "success")
+    else:
+        flash("No tienes permiso para aceptar esta solicitud", "danger")
+
+    cursor.close()
+    return redirect(request.referrer or url_for("index"))
+
+
+
+
+# ---------- RECHAZAR SOLICITUD ----------
+@app.route("/rechazar_solicitud_admin/<int:id>/<int:usuario_id>")
+def rechazar_solicitud_admin(id, usuario_id):
+    if "usuario_id" not in session:
+        return redirect(url_for("login"))
+
+    cursor = mysql.connection.cursor()
+    # Validar admin
+    cursor.execute("""
+        SELECT s.equipo_id
+        FROM solicitudes s
+        JOIN equipo_integrantes ei ON ei.equipo_id = s.equipo_id
+        WHERE s.id = %s AND ei.usuario_id = %s AND ei.es_admin = TRUE
+    """, (id, session["usuario_id"]))
+    solicitud = cursor.fetchone()
+
+    if solicitud:
+        cursor.execute("UPDATE solicitudes SET estado='rechazada' WHERE id=%s", (id,))
+        # Crear notificación
+        mensaje = "Tu solicitud fue rechazada"
+        cursor.execute(
+            'INSERT INTO notificaciones (usuario_id, mensaje, tipo) VALUES (%s, %s, "respuesta")',
+            (usuario_id, mensaje)
+        )
+
+        mysql.connection.commit()
+        flash("Solicitud rechazada correctamente", "success")
+    else:
+        flash("No tienes permiso para rechazar esta solicitud", "danger")
+
+    cursor.close()
+    return redirect(request.referrer or url_for("index"))
+
+
+
+# ---------- ENVIAR SOLICITUD ----------
+@app.route('/enviar_solicitud/<int:equipo_id>')
+def enviar_solicitud(equipo_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    cursor = mysql.connection.cursor()
+
+    # Verificar si ya envió solicitud
+    cursor.execute(
+        'SELECT * FROM solicitudes WHERE usuario_id = %s AND equipo_id = %s',
+        (usuario['id'], equipo_id)
+    )
+    if cursor.fetchone():
+        flash("Ya enviaste una solicitud a este equipo", "warning")
+    else:
+        cursor.execute(
+            'INSERT INTO solicitudes (usuario_id, equipo_id, estado) VALUES (%s, %s, %s)',
+            (usuario['id'], equipo_id, 'pendiente')
+        )
+
+        # Obtener admins del equipo
+        cursor.execute(
+            'SELECT usuario_id FROM equipo_integrantes WHERE equipo_id = %s AND es_admin=TRUE',
+            (equipo_id,)
+        )
+        admins = cursor.fetchall()
+        mensaje = f"{usuario['nombre_completo']} ha solicitado unirse a tu equipo"
+
+        for admin in admins:
+            cursor.execute(
+                'INSERT INTO notificaciones (usuario_id, mensaje, tipo) VALUES (%s, %s, "solicitud")',
+                (admin['usuario_id'], mensaje)
+            )
+
+        mysql.connection.commit()
+        flash("Solicitud enviada correctamente", "success")
+
+    cursor.close()
+    return redirect(url_for('index'))
+
+
+
+@app.context_processor
+def inject_notificaciones():
+    if 'usuario' in session:
+        usuario_id = session['usuario']['id']
+        cursor = mysql.connection.cursor()  # <- aquí
+        # Contar solicitudes pendientes donde el usuario sea admin del equipo
+        cursor.execute('''
+            SELECT COUNT(*) AS total
+            FROM solicitudes s
+            JOIN equipos e ON s.equipo_id = e.id
+            WHERE s.estado="pendiente" AND e.creador_id=%s
+        ''', (usuario_id,))
+        pendiente = cursor.fetchone()['total']
+        cursor.close()
+        return dict(notificaciones_pendientes=pendiente)
+    return dict(notificaciones_pendientes=0)
+
 
 
 if __name__ == '__main__':

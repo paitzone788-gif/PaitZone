@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Botón dinámico de regreso -->
+    {% if origen == 'mi_equipo' %}
+        <a href="{{ url_for('mi_equipo') }}" class="btn btn-secondary mb-3">Regresar a Mi Proyecto</a>
+    {% elif origen == 'project' %}
+        <a href="{{ url_for('index') }}" class="btn btn-secondary mb-3">Regresar a Equipos</a>
+    {% else %}
+        <a href="{{ url_for('index') }}" class="btn btn-secondary mb-3">Regresar</a>
+    {% endif %}
+
+    <!-- Card principal del perfil -->
+    <div class="card p-4" style="background-color: {{ bg_color | default('#2F4F73') }}; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+        <h2 class="mb-4" style="color: #ffffff;">{{ perfil.nombre_completo }}</h2>
+
+        <!-- Mini-cuadros para cada dato -->
+        <div class="mb-3 p-3" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <strong>Carrera:</strong> {{ perfil.carrera }}
+        </div>
+
+        <div class="mb-3 p-3" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <strong>Grado y Grupo:</strong> {{ perfil.grado }}° {{ perfil.grupo }}
+        </div>
+
+        <div class="mb-3 p-3" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <strong>Teléfono:</strong> {{ perfil.telefono or "No proporcionado" }}
+        </div>
+
+        <div class="mb-3 p-3" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <strong>Descripción:</strong> {{ perfil.descripcion or "No ha agregado descripción aún" }}
+        </div>
+
+        {% if usuario and usuario.id == perfil.id %}
+            <a href="{{ url_for('editar_perfil') }}" class="btn btn-primary mt-3">Editar perfil</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
