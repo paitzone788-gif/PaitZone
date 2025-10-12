@@ -67,7 +67,6 @@
 
 <script>
 document.addEventListener('click', async (e) => {
-    // detectar clicks sobre los botones
     if (e.target.classList.contains('btn-aceptar') || e.target.classList.contains('btn-rechazar')) {
         const btn = e.target;
         const solicitudId = btn.dataset.solicitud;
@@ -77,6 +76,9 @@ document.addEventListener('click', async (e) => {
         }
 
         const nuevoEstado = btn.classList.contains('btn-aceptar') ? 'aceptada' : 'rechazada';
+        const color = nuevoEstado === 'aceptada' ? 'bg-success' : 'bg-danger';
+        const emoji = nuevoEstado === 'aceptada' ? '✅' : '❌';
+        const texto = nuevoEstado === 'aceptada' ? 'Solicitud aceptada' : 'Solicitud rechazada';
 
         try {
             btn.disabled = true;
@@ -89,17 +91,28 @@ document.addEventListener('click', async (e) => {
             const data = await resp.json().catch(() => null);
 
             if (resp.ok && data && data.success) {
-                // reemplaza el li completo para mostrar estado actualizado
                 const li = btn.closest('li');
-                li.innerHTML = `
-                    <div class="me-3">
-                        <strong>Solicitud ${nuevoEstado === 'aceptada' ? 'aceptada ✅' : 'rechazada ❌'}</strong><br>
-                        <small class="text-muted">Actualizado</small>
-                    </div>
-                    <span class="badge ${nuevoEstado === 'aceptada' ? 'bg-success' : 'bg-danger'}">
-                        ${nuevoEstado.charAt(0).toUpperCase() + nuevoEstado.slice(1)}
-                    </span>
-                `;
+
+                // animación de salida
+                li.style.transition = 'all 0.4s ease';
+                li.style.opacity = '0';
+                li.style.transform = 'scale(0.95)';
+
+                setTimeout(() => {
+                    li.innerHTML = `
+                        <div class="me-3 fade-in">
+                            <strong>${texto} ${emoji}</strong><br>
+                            <small class="text-muted">Actualizado correctamente</small>
+                        </div>
+                        <span class="badge ${color}">
+                            ${nuevoEstado.charAt(0).toUpperCase() + nuevoEstado.slice(1)}
+                        </span>
+                    `;
+
+                    // animación de entrada
+                    li.style.opacity = '1';
+                    li.style.transform = 'scale(1)';
+                }, 400);
             } else {
                 const msg = (data && data.message) ? data.message : 'Error al actualizar la solicitud';
                 alert(msg);
@@ -113,6 +126,18 @@ document.addEventListener('click', async (e) => {
     }
 });
 </script>
+
+<style>
+/* Suaviza las animaciones */
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+</style>
+
 
 
 

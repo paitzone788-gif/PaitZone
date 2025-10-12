@@ -252,8 +252,9 @@
 document.addEventListener("DOMContentLoaded", function() {
     const modal = document.getElementById('notificacionesModal');
     const modalBody = document.getElementById('modal-body-notificaciones');
-    const badgeNotificaciones = document.getElementById('badgeNotificaciones'); // si tienes un contador 🔔
+    const badgeNotificaciones = document.getElementById('badgeNotificaciones'); // si tienes contador 🔔
 
+    // Cuando se abre la modal
     modal.addEventListener('show.bs.modal', function () {
         modalBody.innerHTML = `
             <div class="text-center py-4 text-muted">
@@ -270,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(res => res.text())
             .then(html => {
                 modalBody.innerHTML = html;
-                initBotonesSolicitudes();
+                initBotonesSolicitudes(); // Inicializa eventos de botones
             })
             .catch(err => {
                 console.error(err);
@@ -279,62 +280,67 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function initBotonesSolicitudes() {
-        // ✅ Aceptar solicitud
-        document.querySelectorAll('.btn-aceptar').forEach(btn => {
+        document.querySelectorAll('.btn-aceptar, .btn-rechazar').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                const url = btn.dataset.url;
-                if (!url) return alert('URL no encontrada en el botón');
+                const solicitudId = btn.dataset.solicitud;
+                const usuarioId = btn.dataset.usuario;
+                const esAceptar = btn.classList.contains('btn-aceptar');
+
+                const url = esAceptar 
+                    ? `/aceptar_solicitud_modal/${solicitudId}/${usuarioId}`
+                    : `/rechazar_solicitud_admin/${solicitudId}/${usuarioId}`;
 
                 btn.disabled = true;
+
                 try {
                     const resp = await fetch(url, { method: 'POST' });
                     const data = await resp.json();
 
                     if (data.success) {
-                        const li = btn.closest('li');
-                        li.innerHTML = `
-                            <div>
-                                <strong>Solicitud aceptada ✅</strong><br>
-                                <small class="text-muted">Actualizado correctamente</small>
-                            </div>
-                        `;
-                        actualizarContador();
+                        const li = btn.closest('.notificacion-item') || btn.closest('li');
+                        if (!li) return;
+
+                        // Animación de salida
+                        li.style.transition = 'all 0.4s ease';
+                        li.style.opacity = '0';
+                        li.style.transform = 'scale(0.95)';
+
+                        setTimeout(() => {
+                            if (esAceptar) {
+                                li.innerHTML = `
+                                    <div>
+                                        <strong>✅ Solicitud aceptada</strong><br>
+                                        <small class="text-muted">Actualizado correctamente</small>
+                                    </div>
+                                `;
+                            } else {
+                                li.innerHTML = `
+                                    <div>
+                                        <strong>❌ Solicitud rechazada</strong><br>
+                                        <small class="text-muted">El usuario ha sido notificado</small>
+                                    </div>
+                                `;
+                            }
+
+                            // Animación de entrada
+                            li.style.opacity = '1';
+                            li.style.transform = 'scale(1)';
+                            actualizarContador();
+
+                            // Si fue rechazada, desaparece luego de 1.2s
+                            if (!esAceptar) {
+                                setTimeout(() => li.remove(), 1200);
+                            }
+
+                        }, 400);
                     } else {
-                        alert(data.error || 'Error al aceptar la solicitud');
+                        alert(data.message || 'Error al procesar la solicitud');
                         btn.disabled = false;
                     }
                 } catch (err) {
                     console.error(err);
-                    alert('Error de red o del servidor');
-                    btn.disabled = false;
-                }
-            });
-        });
-
-        // ✅ Rechazar solicitud
-        document.querySelectorAll('.btn-rechazar').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const url = btn.dataset.url;
-                if (!url) return alert('URL no encontrada en el botón');
-
-                btn.disabled = true;
-                try {
-                    const resp = await fetch(url, { method: 'POST' });
-                    const data = await resp.json();
-
-                    if (data.success) {
-                        const li = btn.closest('li');
-                        li.remove(); // elimina la notificación
-                        actualizarContador();
-                    } else {
-                        alert(data.error || 'Error al rechazar la solicitud');
-                        btn.disabled = false;
-                    }
-                } catch (err) {
-                    console.error(err);
-                    alert('Error de red o del servidor');
+                    alert('🚨 Error en la solicitud');
                     btn.disabled = false;
                 }
             });
@@ -350,53 +356,13 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
+<style>
+/* Animaciones suaves */
+.notificacion-item {
+    transition: all 0.6s ease;
+}
+</style>
 
-<script>
-document.querySelectorAll(".btn-aceptar").forEach(boton => {
-    boton.addEventListener("click", async () => {
-        const solicitudId = boton.dataset.solicitud;
-        const usuarioId = boton.dataset.usuario;
-
-        try {
-            const resp = await fetch(`/aceptar_solicitud_modal/${solicitudId}/${usuarioId}`, {
-                method: "POST"
-            });
-            const data = await resp.json();
-            if (data.success) {
-                alert("✅ Solicitud aceptada correctamente");
-                boton.closest(".notificacion-item").remove();
-            } else {
-                alert("⚠️ " + (data.message || data.error || "Error al aceptar solicitud"));
-            }
-        } catch (err) {
-            alert("🚨 Error al aceptar solicitud");
-        }
-    });
-});
-
-document.querySelectorAll(".btn-rechazar").forEach(boton => {
-    boton.addEventListener("click", async () => {
-        const solicitudId = boton.dataset.solicitud;
-        const usuarioId = boton.dataset.usuario;
-
-        try {
-            const resp = await fetch(`/rechazar_solicitud_admin/${solicitudId}/${usuarioId}`, {
-                method: "POST"
-            });
-            const data = await resp.json();
-            if (data.success) {
-                alert("❌ Solicitud rechazada correctamente");
-                boton.closest(".notificacion-item").remove();
-            } else {
-                alert("⚠️ " + (data.message || data.error || "Error al rechazar solicitud"));
-            }
-        } catch (err) {
-            alert("🚨 Error al rechazar solicitud");
-        }
-    });
-});
-
-</script>
 
 </body>
 </html>
