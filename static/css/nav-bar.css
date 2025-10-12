@@ -102,7 +102,7 @@
 
 /* === ESTADO SCROLLED === */
 .navbar-shrink {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(174, 175, 182, 0.95);
   backdrop-filter: blur(15px);
   border-bottom: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
@@ -150,7 +150,7 @@
 /* === RESPONSIVE === */
 @media (max-width: 992px) {
   .navbar-collapse {
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(0, 0, 0, 0.92);
     backdrop-filter: blur(12px);
     border-radius: 8px;
     padding: 1rem;
@@ -178,3 +178,36 @@
   background: linear-gradient(90deg, rgba(20,20,20,0.9) 0%, rgba(25,25,25,0.7) 100%);
 }
 */
+
+
+/* === EFECTO/estilo para las cards  === */
+
+
+.equipo-card {
+  background: linear-gradient(145deg, rgba(20,20,20,0.95), rgba(35,35,35,0.9));
+  border-radius: 1.25rem; /* esquinas redondeadas */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.equipo-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 123, 255, 0.4);
+}
+
+.equipo-card .card-body {
+  padding: 1.5rem;
+}
+
+.equipo-card .btn {
+  border-radius: 0.75rem;
+  font-weight: 500;
+}
+
+.equipo-card .badge {
+  font-size: 0.8rem;
+  border-radius: 0.5rem;
+  padding: 0.4em 0.6em;
+}

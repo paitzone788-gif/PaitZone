@@ -68,47 +68,36 @@ mysql = MySQL(app)
 
 @app.route('/')
 def index():
-    cursor = mysql.connection.cursor()
     usuario = session.get('usuario')
 
-    # --- Traer equipos según usuario ---
-    if usuario:
-        # Solo equipos que necesiten la carrera del usuario (tanto públicos como privados)
-        cursor.execute('''
-            SELECT DISTINCT e.*, 
-                   (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
-            FROM equipos e
-            JOIN equipo_carreras ec ON e.id = ec.equipo_id
-            JOIN carreras c ON ec.carrera_id = c.id
-            WHERE c.nombre = %s
-        ''', (usuario['carrera'],))
-    else:
-        # Visitante ve solo equipos públicos
-        cursor.execute('''
-            SELECT e.*, 
-                   (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
-            FROM equipos e
-            WHERE e.privacidad = 'publico'
-        ''')
+    # Si no hay sesión, mostrar la página pública de inicio
+    if not usuario:
+        return render_template("inicio.html")
 
+    # Si hay sesión, seguir con la lógica original
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    cursor.execute('''
+        SELECT DISTINCT e.*, 
+               (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) AS integrantes_actuales
+        FROM equipos e
+        JOIN equipo_carreras ec ON e.id = ec.equipo_id
+        JOIN carreras c ON ec.carrera_id = c.id
+        WHERE c.nombre = %s
+    ''', (usuario['carrera'],))
     equipos = cursor.fetchall()
 
-    # --- Filtrar equipos que no estén llenos o que contengan al usuario ---
     filtrados = []
-    if usuario:
-        for eq in equipos:
-            cursor.execute(
-                'SELECT 1 FROM equipo_integrantes WHERE equipo_id = %s AND usuario_id = %s',
-                (eq['id'], usuario['id'])
-            )
-            pertenece = cursor.fetchone()
-            if eq['integrantes_actuales'] < eq['max_integrantes'] or pertenece:
-                filtrados.append(eq)
-        equipos = filtrados
-    else:
-        equipos = [eq for eq in equipos if eq['integrantes_actuales'] < eq['max_integrantes']]
+    for eq in equipos:
+        cursor.execute(
+            'SELECT 1 FROM equipo_integrantes WHERE equipo_id = %s AND usuario_id = %s',
+            (eq['id'], usuario['id'])
+        )
+        pertenece = cursor.fetchone()
+        if eq['integrantes_actuales'] < eq['max_integrantes'] or pertenece:
+            filtrados.append(eq)
+    equipos = filtrados
 
-    # --- Agregar integrantes y carreras necesarias ---
     for equipo in equipos:
         cursor.execute('''
             SELECT u.id, u.nombre_completo, u.carrera, u.grado, u.grupo
@@ -126,48 +115,43 @@ def index():
         ''', (equipo['id'],))
         equipo['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
 
-    # --- Verificar si el usuario ya tiene un proyecto ---
     mi_proyecto = None
-    equipos_disponibles = equipos.copy()  # por defecto todos los filtrados
-    if usuario:
+    equipos_disponibles = equipos.copy()
+    cursor.execute('''
+        SELECT e.* FROM equipos e
+        JOIN equipo_integrantes ei ON e.id = ei.equipo_id
+        WHERE ei.usuario_id = %s
+        LIMIT 1
+    ''', (usuario['id'],))
+    mi_proyecto = cursor.fetchone()
+
+    if mi_proyecto:
         cursor.execute('''
-            SELECT e.* FROM equipos e
-            JOIN equipo_integrantes ei ON e.id = ei.equipo_id
-            WHERE ei.usuario_id = %s
-            LIMIT 1
-        ''', (usuario['id'],))
-        mi_proyecto = cursor.fetchone()
+            SELECT u.id, u.nombre_completo, u.carrera, u.grado, u.grupo
+            FROM equipo_integrantes ei
+            JOIN usuarios u ON ei.usuario_id = u.id
+            WHERE ei.equipo_id = %s
+        ''', (mi_proyecto['id'],))
+        mi_proyecto['integrantes'] = cursor.fetchall()
 
-        if mi_proyecto:
-            # Traer integrantes y carreras del proyecto
-            cursor.execute('''
-                SELECT u.id, u.nombre_completo, u.carrera, u.grado, u.grupo
-                FROM equipo_integrantes ei
-                JOIN usuarios u ON ei.usuario_id = u.id
-                WHERE ei.equipo_id = %s
-            ''', (mi_proyecto['id'],))
-            mi_proyecto['integrantes'] = cursor.fetchall()
+        cursor.execute('''
+            SELECT c.nombre
+            FROM equipo_carreras ec
+            JOIN carreras c ON ec.carrera_id = c.id
+            WHERE ec.equipo_id = %s
+        ''', (mi_proyecto['id'],))
+        mi_proyecto['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
+        equipos_disponibles = [eq for eq in equipos if eq['id'] != mi_proyecto['id']]
 
-            cursor.execute('''
-                SELECT c.nombre
-                FROM equipo_carreras ec
-                JOIN carreras c ON ec.carrera_id = c.id
-                WHERE ec.equipo_id = %s
-            ''', (mi_proyecto['id'],))
-            mi_proyecto['carreras_necesarias'] = [c['nombre'] for c in cursor.fetchall()]
-
-            # Quitar su proyecto de los equipos disponibles
-            equipos_disponibles = [eq for eq in equipos if eq['id'] != mi_proyecto['id']]
-
-
-    
     cursor.close()
+
     return render_template(
         "project.html",
         equipos=equipos_disponibles,
         usuario=usuario,
         mi_proyecto=mi_proyecto
     )
+
 
 # ruta admin
 @app.route('/admin')
@@ -1187,9 +1171,9 @@ def notificaciones_actualizar():
 
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # 🔍 Buscar la solicitud
+    # Buscar la solicitud y su equipo
     cursor.execute("""
-        SELECT s.*, e.nombre_proyecto, e.creador_id
+        SELECT s.*, e.nombre_proyecto, e.creador_id, e.capacidad
         FROM solicitudes s
         JOIN equipos e ON s.equipo_id = e.id
         WHERE s.solicitud_id = %s
@@ -1200,11 +1184,25 @@ def notificaciones_actualizar():
         cursor.close()
         return jsonify({'success': False, 'message': 'Solicitud no encontrada'}), 404
 
-    # 🔹 Actualizar el estado
+    # ⚠️ Verificar si el equipo ya está lleno antes de aceptar
+    if nuevo_estado == "aceptada":
+        cursor.execute("""
+            SELECT COUNT(*) AS miembros_actuales
+            FROM miembros
+            WHERE equipo_id = %s
+        """, (solicitud['equipo_id'],))
+        miembros_actuales = cursor.fetchone()['miembros_actuales']
+
+        # Si el equipo ya tiene su capacidad completa
+        if miembros_actuales >= solicitud['capacidad']:
+            cursor.close()
+            return jsonify({'success': False, 'message': 'El equipo ya está completo'}), 400
+
+    # Actualizar el estado de la solicitud
     cursor.execute("UPDATE solicitudes SET estado = %s WHERE solicitud_id = %s", (nuevo_estado, solicitud_id))
     mysql.connection.commit()
 
-    # 🔔 Crear notificación para el solicitante
+    # Crear notificación para el solicitante
     estado_texto = "aceptada ✅" if nuevo_estado == "aceptada" else "rechazada ❌"
     mensaje = f"Tu solicitud para unirte al equipo '{solicitud['nombre_proyecto']}' fue {estado_texto}."
 
@@ -1217,6 +1215,7 @@ def notificaciones_actualizar():
     cursor.close()
 
     return jsonify({'success': True, 'message': f'Solicitud {nuevo_estado} correctamente'})
+
 
 
 

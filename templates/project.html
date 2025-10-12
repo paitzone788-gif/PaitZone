@@ -3,14 +3,18 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Entrelaza Polimatute</title>
+<title>PaitZone </title>
 <link rel="stylesheet" href="/static/css/fondo.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="/static/css/nav-bar.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="/static/css/notificacion.css">
+<link rel="stylesheet" href="/static/css/animacion.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 <body>
+
+
 
 <nav id="mainNavbar" class="navbar navbar-expand-lg custom-navbar fixed-top shadow-sm py-3">
   <div class="container-fluid d-flex align-items-center justify-content-between px-4">
@@ -21,35 +25,26 @@
     <!-- BOTÓN HAMBURGUESA -->
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
       aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-      <i class="fa-solid fa-bars" style="color: #fff; font-size: 1.4rem;"></i>
+      <i class="fa-solid fa-bars" style="color: #b7b7bc; font-size: 1.4rem;"></i>
     </button>
 
     <!-- CONTENIDO -->
     <div class="collapse navbar-collapse justify-content-center" id="navbarContent">
       <ul class="navbar-nav gap-4">
-        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-        <li class="nav-item"><a class="nav-link" href="/sobre">Sobre Nosotros</a></li>
-        <li class="nav-item"><a class="nav-link" href="/proyectos">Proyectos</a></li>
-        <li class="nav-item"><a class="nav-link" href="/contacto">Contacto</a></li>
-      </ul>
-    </div>
-
     <!-- DERECHA (BOTONES DE USUARIO) -->
     <div class="d-flex align-items-center navbar-right">
 {% if usuario %}
-    <span class="username me-3 text-white">Hola, {{ usuario['nombre_completo'] }}</span>
     <!-- BOTÓN  notis-->
-<a href="#" data-bs-toggle="modal" data-bs-target="#notificacionesModal" class="btn btn-light me-3">
-  Notificaciones
+    <span class="username me-3 text-white">Hola, {{ usuario['nombre_completo'] }}</span>
+<a href="#" data-bs-toggle="modal" data-bs-target="#notificacionesModal"
+   class="btn btn-light position-relative me-3">
+  <i class="bi bi-bell fs-5"></i>
   {% if notificaciones_pendientes > 0 %}
-    <span class="badge bg-danger">{{ notificaciones_pendientes }}</span>
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+      {{ notificaciones_pendientes }}
+    </span>
   {% endif %}
 </a>
-
-
-
-
-
     {% if mi_proyecto %}
       <a href="{{ url_for('mi_equipo') }}" class="btn btn-cafe me-2">Mi Proyecto</a>
     {% else %}
@@ -62,6 +57,8 @@
     <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2"><i class="fa-solid fa-user"></i></a>
     <a href="{{ url_for('register') }}" class="btn btn-cafe"><i class="fa-solid fa-address-card"></i></a>
 {% endif %}
+    </div>
+      </ul>
     </div>
   </div>
 </nav>
@@ -167,45 +164,99 @@
 
     <!-- MOSTRAR EQUIPOS DISPONIBLES SOLO SI NO HAY PROYECTO -->
 {% if not mi_proyecto %}
-<h2 class="mb-4 text-center" style="color: rgb(255, 249, 249);">Equipos Disponibles</h2><br>
-<div class="row">
-  {% for equipo in equipos %}
-  <div class="col-md-6 col-lg-4">
-    <div class="card project-card mb-4 shadow-sm" style="background-color: rgba(0, 0, 0, 0.844);">
-      <div class="card-body" style="color: white;">
-        <h5 class="card-title">Proyecto: {{ equipo.nombre_proyecto }}</h5>
-        <p class="card-text">{{ equipo.descripcion }}</p>
-        <ul>
-          <li>Integrantes actuales: {{ equipo.integrantes | length }} / {{ equipo.max_integrantes }}</li>
-          <li>Carreras necesarias: {{ equipo.carreras_necesarias | join(', ') }}</li>
-          <li>Privacidad: 
-            {% if equipo.privacidad == 'publico' %}
-              <span class="badge bg-success">Público</span>
-            {% else %}
-              <span class="badge bg-warning text-dark">Privado</span>
-            {% endif %}
-          </li>
-        </ul>
+<h2 class="mb-4 text-center text-light fw-bold">Equipos Disponibles</h2>
 
-        {% if usuario %}
-          {% if equipo.privacidad == 'publico' %}
-            <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
+<div class="row g-4">
+  {% for equipo in equipos %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card equipo-card h-100 text-light">
+      <div class="card-body d-flex flex-column">
+        
+        <!-- Nombre del proyecto -->
+        <div class="mb-3">
+          <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
+            Nombre del proyecto
+          </h6>
+          <h5 class="fw-semibold text-light mb-3">{{ equipo.nombre_proyecto }}</h5>
+        </div>
+
+        <!-- Descripción del proyecto -->
+        <div class="mb-3">
+          <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
+            Descripción del proyecto
+          </h6>
+          <p class="card-text small mb-3" style="color: rgba(255, 255, 255, 0.9);">
+            {{ equipo.descripcion }}
+          </p>
+        </div>
+
+        <!-- Asesor -->
+        <p class="mb-2"><strong>Asesor:</strong> {{ equipo.asesor or "No asignado" }}</p>
+
+        <!-- Carreras necesarias -->
+        <div class="mb-3">
+          <strong>Carreras necesarias:</strong><br>
+          {% for carrera in equipo.carreras_necesarias %}
+            <span class="badge bg-info text-dark mb-1">{{ carrera }}</span>
           {% else %}
-            <a href="{{ url_for('enviar_solicitud', equipo_id=equipo.id) }}" class="btn btn-outline-warning w-100">
-    Enviar solicitud
-</a>
+            <span class="text-muted small">No especificadas</span>
+          {% endfor %}
+        </div>
+
+        <!-- Integrantes -->
+        <div class="mb-3">
+          <strong>Integrantes ({{ equipo.integrantes | length }}/{{ equipo.max_integrantes }}):</strong>
+          <ul class="list-unstyled mt-2 mb-0">
+            {% for integrante in equipo.integrantes %}
+              <li class="d-flex align-items-center justify-content-between bg-secondary bg-opacity-10 rounded px-2 py-1 mb-1">
+                <div>
+                  <span>{{ integrante.nombre_completo }}</span>
+                  {% if integrante.id == equipo.creador_id %}
+                    <span class="badge bg-warning text-dark ms-1">Admin</span>
+                  {% endif %}
+                </div>
+                <a href="{{ url_for('perfil', id=integrante.id) }}" class="btn btn-sm btn-outline-light">Ver perfil</a>
+              </li>
+            {% else %}
+              <li class="text-muted small">Sin integrantes</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Privacidad -->
+        <div class="mb-3">
+          <strong>Privacidad:</strong>
+          {% if equipo.privacidad == 'publico' %}
+            <span class="badge bg-success">Público</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">Privado</span>
           {% endif %}
-        {% else %}
-          <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Inicia sesión para unirte</a>
-        {% endif %}
+        </div>
+
+        <!-- Botón de acción -->
+        <div class="mt-auto">
+          {% if usuario %}
+            {% if equipo.privacidad == 'publico' %}
+              <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
+            {% else %}
+              <a href="{{ url_for('enviar_solicitud', equipo_id=equipo.id) }}" class="btn btn-outline-warning w-100">
+                Enviar solicitud
+              </a>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light w-100">Inicia sesión para unirte</a>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
   {% else %}
-  <p class="text-center" style="color: red;">No hay equipos disponibles en este momento.</p>
+  <p class="text-center text-danger">No hay equipos disponibles en este momento.</p>
   {% endfor %}
 </div>
 {% endif %}
+
+
 
 
 </div>
@@ -225,6 +276,8 @@
 <script src="/static/js/formularioequipo.js"></script>
 <script src="/static/js/animacion de nav-bar.js"></script>
 <script src="/static/js/notificacion.js"></script>
+<script src="/static/js/animacion_inicio.js"></script>
+
 
 
 <!-- Modal de Notificaciones -->
@@ -252,7 +305,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     const modal = document.getElementById('notificacionesModal');
     const modalBody = document.getElementById('modal-body-notificaciones');
-    const badgeNotificaciones = document.getElementById('badgeNotificaciones'); // si tienes contador 🔔
+    const badgeNotificaciones = document.getElementById('badgeNotificaciones'); // contador 🔔 opcional
 
     // Cuando se abre la modal
     modal.addEventListener('show.bs.modal', function () {
@@ -265,13 +318,15 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         `;
 
+        // marcar como leídas
         fetch('/notificaciones/marcar_leidas', { method: 'POST' });
 
+        // cargar las notificaciones
         fetch('/notificaciones/data')
             .then(res => res.text())
             .then(html => {
                 modalBody.innerHTML = html;
-                initBotonesSolicitudes(); // Inicializa eventos de botones
+                initBotonesSolicitudes(); // inicializa botones aceptar/rechazar
             })
             .catch(err => {
                 console.error(err);
@@ -279,6 +334,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     });
 
+    // Inicializa eventos de botones
     function initBotonesSolicitudes() {
         document.querySelectorAll('.btn-aceptar, .btn-rechazar').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -307,54 +363,68 @@ document.addEventListener("DOMContentLoaded", function() {
                         li.style.transform = 'scale(0.95)';
 
                         setTimeout(() => {
-                            if (esAceptar) {
-                                li.innerHTML = `
-                                    <div>
-                                        <strong>✅ Solicitud aceptada</strong><br>
-                                        <small class="text-muted">Actualizado correctamente</small>
-                                    </div>
-                                `;
-                            } else {
-                                li.innerHTML = `
-                                    <div>
-                                        <strong>❌ Solicitud rechazada</strong><br>
-                                        <small class="text-muted">El usuario ha sido notificado</small>
-                                    </div>
-                                `;
-                            }
-
-                            // Animación de entrada
+                            li.innerHTML = `
+                                <div>
+                                    <strong>${esAceptar ? '✅ Solicitud aceptada' : '❌ Solicitud rechazada'}</strong><br>
+                                    <small class="text-muted">Actualizado correctamente</small>
+                                </div>
+                            `;
                             li.style.opacity = '1';
                             li.style.transform = 'scale(1)';
                             actualizarContador();
 
-                            // Si fue rechazada, desaparece luego de 1.2s
                             if (!esAceptar) {
                                 setTimeout(() => li.remove(), 1200);
                             }
-
                         }, 400);
                     } else {
-                        alert(data.message || 'Error al procesar la solicitud');
+                        mostrarToast(data.message || 'Equipo lleno', data.message?.includes('completo') ? 'warning' : 'danger');
                         btn.disabled = false;
                     }
                 } catch (err) {
                     console.error(err);
-                    alert('🚨 Error en la solicitud');
+                    mostrarToast('🚨 Error en la solicitud', 'danger');
                     btn.disabled = false;
                 }
             });
         });
     }
 
+    // Actualiza el contador del ícono de notificaciones
     function actualizarContador() {
         if (!badgeNotificaciones) return;
         let num = parseInt(badgeNotificaciones.textContent || '0');
         if (num > 0) badgeNotificaciones.textContent = num - 1;
         if (num - 1 <= 0) badgeNotificaciones.classList.add('d-none');
     }
+
+    // ✅ Muestra un toast elegante con Bootstrap
+    function mostrarToast(mensaje, tipo = 'info') {
+        const colores = {
+            info: 'text-bg-info',
+            success: 'text-bg-success',
+            warning: 'text-bg-warning',
+            danger: 'text-bg-danger'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center ${colores[tipo] || 'text-bg-secondary'} border-0 position-fixed top-0 end-0 m-3`;
+        toast.style.zIndex = '2000';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body fw-semibold">${mensaje}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
+        bsToast.show();
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
 });
 </script>
+
 
 <style>
 /* Animaciones suaves */
