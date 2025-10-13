@@ -375,6 +375,7 @@ ALTER TABLE `usuarios`
 ALTER TABLE `carreras`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
+ALTER TABLE equipos ADD COLUMN turno ENUM('Matutino', 'Vespertino') DEFAULT 'Matutino';
 --
 -- AUTO_INCREMENT for table `equipos`
 --
@@ -417,12 +418,14 @@ ALTER TABLE `solicitudes`
 ALTER TABLE `solicitudes_equipo`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
+ALTER TABLE usuarios ADD COLUMN turno ENUM('Matutino', 'Vespertino') DEFAULT 'Matutino';
 --
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=447;
 
+UPDATE usuarios SET turno = 'Matutino' WHERE turno IS NULL OR turno = '';
 --
 -- Constraints for dumped tables
 --

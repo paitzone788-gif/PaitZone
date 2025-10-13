@@ -8,8 +8,8 @@
   <h2>Crear nuevo proyecto</h2>
   <form method="post">
     <div class="alert alert-info">
-  Nota: El creador del equipo será automáticamente el administrador y podrá aceptar o rechazar solicitudes.
-</div>
+      Nota: El creador del equipo será automáticamente el administrador y podrá aceptar o rechazar solicitudes.
+    </div>
 
     <div class="mb-3">
       <label for="nombre" class="form-label">Nombre del proyecto</label>
@@ -27,8 +27,18 @@
     </div>
 
     <div class="mb-3">
+      <label for="turno" class="form-label">Turno del equipo</label>
+      <select class="form-select" id="turno" name="turno" required>
+        <option value="" disabled selected>Selecciona el turno para tu equipo</option>
+        <option value="Matutino">Matutino</option>
+        <option value="Vespertino">Vespertino</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
       <label for="integrantes" class="form-label">Nombres completos de los integrantes (separados por coma)</label>
       <input type="text" class="form-control" id="integrantes" name="integrantes" placeholder="Ej: Juan Pérez, María López" />
+      <div class="form-text" style="color: aliceblue;">Opcional: Agrega integrantes iniciales. El sistema verificará que existan en la plataforma.</div>
     </div>
 
     <div class="mb-3">
@@ -44,15 +54,33 @@
       </select>
     </div>
 
+    <!-- ✅ SECCIÓN CARRERAS CON CANTIDADES -->
     <div class="mb-3">
-      <label class="form-label">Carreras necesarias (máximo 6)</label><br />
-      {% for carrera in carreras %}
-      <div class="form-check form-check-inline mb-2">
-        <input class="form-check-input carrera-checkbox" type="checkbox" name="carreras" id="{{ carrera }}" value="{{ carrera }}" />
-        <label class="form-check-label" for="{{ carrera }}">{{ carrera }}</label>
-        <input type="number" class="form-control d-inline-block ms-2 cantidad-input" name="cantidad_carreras" min="0" value="0" style="width: 80px;" placeholder="Cantidad">
+      <label class="form-label">Carreras necesarias (máximo 7) - Especifica cuántas personas de cada carrera necesitas</label><br />
+      <div class="row">
+        {% for carrera in carreras %}
+        <div class="col-md-6 mb-2">
+          <div class="card">
+            <div class="card-body py-2">
+              <div class="form-check">
+                <input class="form-check-input carrera-checkbox" type="checkbox" name="carreras" id="{{ carrera }}" value="{{ carrera }}" />
+                <label class="form-check-label fw-bold" for="{{ carrera }}">{{ carrera }}</label>
+              </div>
+              <div class="mt-2">
+                <label for="cantidad_{{ carrera }}" class="form-label small">Cantidad necesaria:</label>
+                <input type="number" class="form-control form-control-sm cantidad-input" 
+                       id="cantidad_{{ carrera }}" name="cantidad_{{ carrera }}" 
+                       min="0" max="5" value="0" disabled
+                       placeholder="0">
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
+      <div class="form-text" style="color: aliceblue;">
+        Selecciona las carreras que necesitas y especifica cuántas personas de cada una.
+      </div>
     </div>
 
     <button type="submit" class="btn btn-primary">Crear proyecto</button>
@@ -60,6 +88,112 @@
 
   <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">🏠 Volver al inicio</a>
 </div>
+
+<!-- Script para manejar carreras y cantidades -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Habilitar/deshabilitar campos de cantidad cuando se selecciona una carrera
+  const checkboxes = document.querySelectorAll('.carrera-checkbox');
+  
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const carreraNombre = this.value;
+      const cantidadInput = document.getElementById(`cantidad_${carreraNombre}`);
+      
+      if (this.checked) {
+        cantidadInput.disabled = false;
+        cantidadInput.focus();
+      } else {
+        cantidadInput.disabled = true;
+        cantidadInput.value = '0';
+      }
+      
+      // Limitar selección a 7 carreras máximo
+      const checked = document.querySelectorAll('.carrera-checkbox:checked');
+      if (checked.length > 7) {
+        this.checked = false;
+        cantidadInput.disabled = true;
+        cantidadInput.value = '0';
+        alert('Solo puedes seleccionar máximo 7 carreras');
+      }
+    });
+  });
+
+  // Validar que la suma de cantidades no exceda el máximo de integrantes
+  function validarCantidades() {
+    const maxIntegrantes = parseInt(document.getElementById('max_integrantes').value) || 5;
+    let totalRequerido = 0;
+    
+    const checkedCarreras = document.querySelectorAll('.carrera-checkbox:checked');
+    checkedCarreras.forEach(checkbox => {
+      const carreraNombre = checkbox.value;
+      const cantidadInput = document.getElementById(`cantidad_${carreraNombre}`);
+      const cantidad = parseInt(cantidadInput.value) || 0;
+      totalRequerido += cantidad;
+    });
+    
+    return totalRequerido <= maxIntegrantes;
+  }
+
+  // Validar envío del formulario
+  const form = document.querySelector('form');
+  form.addEventListener('submit', function(e) {
+    // Validar que se seleccione al menos 1 carrera
+    const checkedCarreras = document.querySelectorAll('.carrera-checkbox:checked');
+    if (checkedCarreras.length === 0) {
+      e.preventDefault();
+      alert('Debes seleccionar al menos 1 carrera necesaria para el equipo');
+      return false;
+    }
+
+    // Validar que el turno esté seleccionado
+    const turno = document.getElementById('turno').value;
+    if (!turno) {
+      e.preventDefault();
+      alert('Debes seleccionar un turno para el equipo');
+      return false;
+    }
+
+    // Validar que las cantidades no excedan el máximo
+    if (!validarCantidades()) {
+      e.preventDefault();
+      const maxIntegrantes = document.getElementById('max_integrantes').value;
+      alert(`La suma de personas requeridas por carrera no puede exceder el máximo de ${maxIntegrantes} integrantes`);
+      return false;
+    }
+
+    // Validar que cada carrera seleccionada tenga al menos 1 persona
+    let todasTienenCantidad = true;
+    checkedCarreras.forEach(checkbox => {
+      const carreraNombre = checkbox.value;
+      const cantidadInput = document.getElementById(`cantidad_${carreraNombre}`);
+      const cantidad = parseInt(cantidadInput.value) || 0;
+      
+      if (cantidad < 1) {
+        todasTienenCantidad = false;
+      }
+    });
+
+    if (!todasTienenCantidad) {
+      e.preventDefault();
+      alert('Cada carrera seleccionada debe tener al menos 1 persona requerida');
+      return false;
+    }
+  });
+
+  // Validar cantidades en tiempo real
+  const cantidadInputs = document.querySelectorAll('.cantidad-input');
+  cantidadInputs.forEach(input => {
+    input.addEventListener('change', function() {
+      if (!validarCantidades()) {
+        const maxIntegrantes = document.getElementById('max_integrantes').value;
+        alert(`¡Atención! La suma de personas requeridas no puede exceder ${maxIntegrantes}. Ajusta las cantidades.`);
+        this.value = '0';
+      }
+    });
+  });
+});
+</script>
 
 <script src="/static/js/animacion de nav-bar.js"></script>
 {% endblock %}

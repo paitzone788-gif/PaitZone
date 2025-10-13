@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PaitZone </title>
+<title>PaitZone</title>
 <link rel="stylesheet" href="/static/css/fondo.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="/static/css/nav-bar.css">
@@ -11,10 +11,87 @@
 <link rel="stylesheet" href="/static/css/notificacion.css">
 <link rel="stylesheet" href="/static/css/animacion.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+/* ESTILOS ADICIONALES PARA MEJORAR LA APARIENCIA */
+.main-content {
+    margin-top: 90px; /* Espacio para el navbar fijo */
+    min-height: calc(100vh - 90px);
+    padding-bottom: 2rem;
+}
+
+.floating-alerts {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 1050;
+    max-width: 350px;
+}
+
+.floating-alert {
+    margin-bottom: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Mejoras para las cards */
+.equipo-card {
+    background: linear-gradient(145deg, rgba(20,20,20,0.95), rgba(35,35,35,0.9));
+    border-radius: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.equipo-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    border-color: rgba(0, 123, 255, 0.4);
+}
+
+/* Alert info - COMPLETAMENTE OPACO */
+.alert-info-custom {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    border: 1px solid #0a58ca;
+    border-radius: 15px;
+    color: white;
+    padding: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.alert-info-custom h6 {
+    color: white;
+    font-weight: 600;
+}
+
+.alert-info-custom strong {
+    color: white;
+}
+
+.alert-info-custom .badge {
+    font-size: 0.9rem;
+    padding: 0.5em 0.8em;
+}
+/* Contenedor principal mejorado */
+.container-custom {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+</style>
 </head>
 <body>
-
-
 
 <nav id="mainNavbar" class="navbar navbar-expand-lg custom-navbar fixed-top shadow-sm py-3">
   <div class="container-fluid d-flex align-items-center justify-content-between px-4">
@@ -63,223 +140,204 @@
   </div>
 </nav>
 
-
-<br><br><br><br><br><br>
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="floating-alerts">
-      {% for category, message in messages %}
-        <div class="floating-alert alert-{{ category }}">
-          <span>{{ message }}</span>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
-
-
-
-<br><br>
-
-<div class="container" style="padding-top:70px;">
-
-    <!-- MOSTRAR noticias DEL USUARIO -->
-{% if mi_proyecto %}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">Noticias y Actualizaciones</h5>
-            <p class="card-text">Aquí puedes mostrar información relevante, anuncios de la plataforma o tips para tu proyecto.</p>
-
-            <!-- CARRUSEL CON CAPTION Y BOTÓN -->
-            <div id="carouselProyecto" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-
-                    <div class="carousel-item active">
-                        <img src="/static/img/n1.jpg" class="d-block w-100" alt="Imagen 1">
-                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
-                            <h5>Título de la noticia 1</h5>
-                            <p>Descripción corta o resumen de la noticia 1.</p>
-                            <a href="/" class="btn btn-primary btn-sm">Leer más</a>
-                        </div>
-                    </div>
-
-                    <div class="carousel-item">
-                        <img src="/static/img/n2.jpeg" class="d-block w-100" alt="Imagen 2">
-                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
-                            <h5>Título de la noticia 2</h5>
-                            <p>Descripción corta o resumen de la noticia 2.</p>
-                            <a href="/" class="btn btn-primary btn-sm">Leer más</a>
-                        </div>
-                    </div>
-
-                    <div class="carousel-item">
-                        <img src="/static/img/n3.jpeg" class="d-block w-100" alt="Imagen 3">
-                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
-                            <h5>Título de la noticia 3</h5>
-                            <p>Descripción corta o resumen de la noticia 3.</p>
-                            <a href="" class="btn btn-primary btn-sm">Leer más</a>
-                        </div>
-                    </div>
-
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselProyecto" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselProyecto" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Siguiente</span>
-                </button>
-            </div>
-            
-            <div class="container text-center">
-  <div class="row">
-    <div class="col">
-      <img src="/static/img/n1.jpg" alt="">
-      <p>skibidi</p>
-    </div>
-    <div class="col">
-      <img src="/static/img/n1.jpg" alt="">
-    </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <img src="/static/img/n1.jpg" alt="">
-    </div>
-    <div class="col">
-      <img src="/static/img/n1.jpg" alt="">
-    </div>
-    <div class="col">
-      <img src="/static/img/n1.jpg" alt="">
-    </div>
-  </div>
-
-            </div>
-
-        </div>
-    </div>
-{% endif %}
-
-
-    <!-- MOSTRAR EQUIPOS DISPONIBLES SOLO SI NO HAY PROYECTO -->
-{% if not mi_proyecto %}
-<h2 class="mb-4 text-center text-light fw-bold">Equipos Disponibles</h2>
-
-<div class="row g-4">
-  {% for equipo in equipos %}
-  <div class="col-12 col-md-6 col-lg-4">
-    <div class="card equipo-card h-100 text-light">
-      <div class="card-body d-flex flex-column">
+<!-- CONTENIDO PRINCIPAL -->
+<div class="main-content">
+    <div class="container container-custom">
         
-        <!-- Nombre del proyecto -->
-        <div class="mb-3">
-          <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
-            Nombre del proyecto
-          </h6>
-          <h5 class="fw-semibold text-light mb-3">{{ equipo.nombre_proyecto }}</h5>
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="floating-alerts">
+              {% for category, message in messages %}
+                <div class="floating-alert alert-{{ category }} alert alert-{{ category }} alert-dismissible fade show">
+                  <span>{{ message }}</span>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <!-- Mensaje informativo - SOLO SI NO TIENES EQUIPO -->
+        {% if not mi_proyecto %}
+        <div class="alert alert-info-custom mb-4">
+          <h6 class="mb-2">🔍 Filtros aplicados:</h6>
+          <div class="row">
+            <div class="col-md-6">
+              <strong>Carrera:</strong> {{ usuario.carrera }}
+            </div>
+            <div class="col-md-6">
+              <strong>Turno:</strong> 
+              <span class="badge {% if usuario.turno == 'Matutino' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                {{ usuario.turno }}
+              </span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <strong>Equipos encontrados:</strong> {{ equipos | length }}
+          </div>
         </div>
+        {% endif %}
 
-        <!-- Descripción del proyecto -->
-        <div class="mb-3">
-          <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
-            Descripción del proyecto
-          </h6>
-          <p class="card-text small mb-3" style="color: rgba(255, 255, 255, 0.9);">
-            {{ equipo.descripcion }}
-          </p>
+        <!-- MOSTRAR NOTICIAS DEL USUARIO -->
+        {% if mi_proyecto %}
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title text-light">Noticias y Actualizaciones</h5>
+                <p class="card-text text-light">Aquí puedes mostrar información relevante, anuncios de la plataforma o tips para tu proyecto.</p>
+
+                <!-- CARRUSEL CON CAPTION Y BOTÓN -->
+                <div id="carouselProyecto" class="carousel slide mb-4" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded-3">
+                        <div class="carousel-item active">
+                            <img src="/static/img/n1.jpg" class="d-block w-100" alt="Imagen 1" style="height: 300px; object-fit: cover;">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
+                                <h5>Título de la noticia 1</h5>
+                                <p>Descripción corta o resumen de la noticia 1.</p>
+                                <a href="/" class="btn btn-primary btn-sm">Leer más</a>
+                            </div>
+                        </div>
+
+                        <div class="carousel-item">
+                            <img src="/static/img/n2.jpeg" class="d-block w-100" alt="Imagen 2" style="height: 300px; object-fit: cover;">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
+                                <h5>Título de la noticia 2</h5>
+                                <p>Descripción corta o resumen de la noticia 2.</p>
+                                <a href="/" class="btn btn-primary btn-sm">Leer más</a>
+                            </div>
+                        </div>
+
+                        <div class="carousel-item">
+                            <img src="/static/img/n3.jpeg" class="d-block w-100" alt="Imagen 3" style="height: 300px; object-fit: cover;">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
+                                <h5>Título de la noticia 3</h5>
+                                <p>Descripción corta o resumen de la noticia 3.</p>
+                                <a href="" class="btn btn-primary btn-sm">Leer más</a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselProyecto" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselProyecto" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
+                </div>
+            </div>
         </div>
+        {% endif %}
 
-        <!-- Asesor -->
-        <p class="mb-2"><strong>Asesor:</strong> {{ equipo.asesor or "No asignado" }}</p>
+        <!-- MOSTRAR EQUIPOS DISPONIBLES SOLO SI NO HAY PROYECTO -->
+        {% if not mi_proyecto %}
+        <h2 class="mb-4 text-center text-light fw-bold">Equipos Disponibles para {{ usuario.turno }}</h2>
 
-        <!-- Carreras necesarias -->
-        <div class="mb-3">
-          <strong>Carreras necesarias:</strong><br>
-          {% for carrera in equipo.carreras_necesarias %}
-            <span class="badge bg-info text-dark mb-1">{{ carrera }}</span>
-          {% else %}
-            <span class="text-muted small">No especificadas</span>
-          {% endfor %}
-        </div>
+        <div class="row g-4">
+          {% for equipo in equipos %}
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card equipo-card h-100 text-light">
+              <div class="card-body d-flex flex-column">
+                
+                <!-- Nombre del proyecto -->
+                <div class="mb-3">
+                  <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
+                    Nombre del proyecto
+                  </h6>
+                  <h5 class="fw-semibold text-light mb-3">{{ equipo.nombre_proyecto }}</h5>
+                </div>
 
-        <!-- Integrantes -->
-        <div class="mb-3">
-          <strong>Integrantes ({{ equipo.integrantes | length }}/{{ equipo.max_integrantes }}):</strong>
-          <ul class="list-unstyled mt-2 mb-0">
-            {% for integrante in equipo.integrantes %}
-              <li class="d-flex align-items-center justify-content-between bg-secondary bg-opacity-10 rounded px-2 py-1 mb-1">
-                <div>
-                  <span>{{ integrante.nombre_completo }}</span>
-                  {% if integrante.id == equipo.creador_id %}
-                    <span class="badge bg-warning text-dark ms-1">Admin</span>
+                <!-- Descripción del proyecto -->
+                <div class="mb-3">
+                  <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
+                    Descripción del proyecto
+                  </h6>
+                  <p class="card-text small mb-3" style="color: rgba(255, 255, 255, 0.9);">
+                    {{ equipo.descripcion }}
+                  </p>
+                </div>
+
+                <!-- Información del equipo en columnas -->
+                <div class="row mb-3">
+                  <div class="col-6">
+                    <strong>Asesor:</strong><br>
+                    <span class="small">{{ equipo.asesor or "No asignado" }}</span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Turno:</strong><br>
+                    <span class="badge {% if equipo.turno == 'Matutino' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                      {{ equipo.turno }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Carreras necesarias -->
+                <div class="mb-3">
+                  <strong>Carreras necesarias:</strong><br>
+                  {% for carrera in equipo.carreras_necesarias %}
+                    <span class="badge bg-info text-dark mb-1">{{ carrera }}</span>
+                  {% else %}
+                    <span class="text-muted small">No especificadas</span>
+                  {% endfor %}
+                </div>
+
+                <!-- Integrantes -->
+                <div class="mb-3">
+                  <strong>Integrantes ({{ equipo.integrantes | length }}/{{ equipo.max_integrantes }}):</strong>
+                  <ul class="list-unstyled mt-2 mb-0">
+                    {% for integrante in equipo.integrantes %}
+                      <li class="d-flex align-items-center justify-content-between bg-secondary bg-opacity-10 rounded px-2 py-1 mb-1">
+                        <div>
+                          <span>{{ integrante.nombre_completo }}</span>
+                          {% if integrante.id == equipo.creador_id %}
+                            <span class="badge bg-warning text-dark ms-1">Admin</span>
+                          {% endif %}
+                        </div>
+                        <a href="{{ url_for('perfil', id=integrante.id) }}" class="btn btn-sm btn-outline-light">Ver perfil</a>
+                      </li>
+                    {% else %}
+                      <li class="text-muted small">Sin integrantes</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+
+                <!-- Privacidad -->
+                <div class="mb-3">
+                  <strong>Privacidad:</strong>
+                  {% if equipo.privacidad == 'publico' %}
+                    <span class="badge bg-success">Público</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Privado</span>
                   {% endif %}
                 </div>
-                <a href="{{ url_for('perfil', id=integrante.id) }}" class="btn btn-sm btn-outline-light">Ver perfil</a>
-              </li>
-            {% else %}
-              <li class="text-muted small">Sin integrantes</li>
-            {% endfor %}
-          </ul>
-        </div>
 
-        <!-- Privacidad -->
-        <div class="mb-3">
-          <strong>Privacidad:</strong>
-          {% if equipo.privacidad == 'publico' %}
-            <span class="badge bg-success">Público</span>
+                <!-- Botón de acción -->
+                <div class="mt-auto">
+                  {% if usuario %}
+                    {% if equipo.privacidad == 'publico' %}
+                      <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
+                    {% else %}
+                      <a href="{{ url_for('enviar_solicitud', equipo_id=equipo.id) }}" class="btn btn-outline-warning w-100">
+                        Enviar solicitud
+                      </a>
+                    {% endif %}
+                  {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light w-100">Inicia sesión para unirte</a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
           {% else %}
-            <span class="badge bg-warning text-dark">Privado</span>
-          {% endif %}
+          <div class="col-12">
+            <p class="text-center text-light">No hay equipos disponibles para tu turno ({{ usuario.turno }}) en este momento.</p>
+          </div>
+          {% endfor %}
         </div>
-
-        <!-- Botón de acción -->
-        <div class="mt-auto">
-          {% if usuario %}
-            {% if equipo.privacidad == 'publico' %}
-              <a href="{{ url_for('unirse', equipo_id=equipo.id) }}" class="btn btn-primary w-100">Unirme</a>
-            {% else %}
-              <a href="{{ url_for('enviar_solicitud', equipo_id=equipo.id) }}" class="btn btn-outline-warning w-100">
-                Enviar solicitud
-              </a>
-            {% endif %}
-          {% else %}
-            <a href="{{ url_for('login') }}" class="btn btn-outline-light w-100">Inicia sesión para unirte</a>
-          {% endif %}
-        </div>
-      </div>
+        {% endif %}
     </div>
-  </div>
-  {% else %}
-  <p class="text-center text-danger">No hay equipos disponibles en este momento.</p>
-  {% endfor %}
-</div>
-{% endif %}
-
-
-
-
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/static/js/formularioequipo.js"></script>
-<script src="/static/js/animacion de nav-bar.js"></script>
-<script src="/static/js/notificacion.js"></script>
-<script src="/static/js/animacion_inicio.js"></script>
-
-
-
+<!-- MODALES Y SCRIPTS -->
 <!-- Modal de Notificaciones -->
 <div class="modal fade" id="notificacionesModal" tabindex="-1" aria-labelledby="notificacionesModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable modal-lg">
@@ -292,7 +350,6 @@
         <div class="text-center py-4 text-muted">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Cargando...</span>
-            
           </div>
           <p class="mt-2">Cargando notificaciones...</p>
         </div>
@@ -301,11 +358,14 @@
   </div>
 </div>
 
+<!-- Script de notificaciones  -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const modal = document.getElementById('notificacionesModal');
     const modalBody = document.getElementById('modal-body-notificaciones');
-    const badgeNotificaciones = document.getElementById('badgeNotificaciones'); // contador 🔔 opcional
+    
+    // Buscar el badge de notificaciones - usa el selector correcto
+    const badgeNotificaciones = document.querySelector('.position-absolute.badge.bg-danger');
 
     // Cuando se abre la modal
     modal.addEventListener('show.bs.modal', function () {
@@ -318,23 +378,41 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         `;
 
-        // marcar como leídas
-        fetch('/notificaciones/marcar_leidas', { method: 'POST' });
+        // Marcar como leídas
+        fetch('/notificaciones/marcar_leidas', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(err => console.error('Error marcando notificaciones:', err));
 
-        // cargar las notificaciones
+        // Cargar las notificaciones
         fetch('/notificaciones/data')
-            .then(res => res.text())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return res.text();
+            })
             .then(html => {
                 modalBody.innerHTML = html;
-                initBotonesSolicitudes(); // inicializa botones aceptar/rechazar
+                initBotonesSolicitudes(); // Inicializa botones aceptar/rechazar
             })
             .catch(err => {
-                console.error(err);
-                modalBody.innerHTML = '<p class="text-danger text-center mt-3">Error al cargar notificaciones.</p>';
+                console.error('Error cargando notificaciones:', err);
+                modalBody.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="text-danger mb-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                        </div>
+                        <p class="text-danger">Error al cargar notificaciones</p>
+                        <button class="btn btn-primary btn-sm" onclick="location.reload()">Reintentar</button>
+                    </div>
+                `;
             });
     });
 
-    // Inicializa eventos de botones
+    // Inicializa eventos de botones aceptar/rechazar
     function initBotonesSolicitudes() {
         document.querySelectorAll('.btn-aceptar, .btn-rechazar').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -348,9 +426,16 @@ document.addEventListener("DOMContentLoaded", function() {
                     : `/rechazar_solicitud_admin/${solicitudId}/${usuarioId}`;
 
                 btn.disabled = true;
+                btn.innerHTML = esAceptar ? '⌛ Aceptando...' : '⌛ Rechazando...';
 
                 try {
-                    const resp = await fetch(url, { method: 'POST' });
+                    const resp = await fetch(url, { 
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
                     const data = await resp.json();
 
                     if (data.success) {
@@ -378,13 +463,15 @@ document.addEventListener("DOMContentLoaded", function() {
                             }
                         }, 400);
                     } else {
-                        mostrarToast(data.message || 'Equipo lleno', data.message?.includes('completo') ? 'warning' : 'danger');
+                        mostrarToast(data.message || 'Error al procesar la solicitud', 'danger');
                         btn.disabled = false;
+                        btn.innerHTML = esAceptar ? 'Aceptar' : 'Rechazar';
                     }
                 } catch (err) {
-                    console.error(err);
-                    mostrarToast('🚨 Error en la solicitud', 'danger');
+                    console.error('Error en la solicitud:', err);
+                    mostrarToast('🚨 Error en la conexión', 'danger');
                     btn.disabled = false;
+                    btn.innerHTML = esAceptar ? 'Aceptar' : 'Rechazar';
                 }
             });
         });
@@ -394,11 +481,14 @@ document.addEventListener("DOMContentLoaded", function() {
     function actualizarContador() {
         if (!badgeNotificaciones) return;
         let num = parseInt(badgeNotificaciones.textContent || '0');
-        if (num > 0) badgeNotificaciones.textContent = num - 1;
-        if (num - 1 <= 0) badgeNotificaciones.classList.add('d-none');
+        if (num > 1) {
+            badgeNotificaciones.textContent = num - 1;
+        } else {
+            badgeNotificaciones.style.display = 'none';
+        }
     }
 
-    // ✅ Muestra un toast elegante con Bootstrap
+    // Muestra un toast elegante
     function mostrarToast(mensaje, tipo = 'info') {
         const colores = {
             info: 'text-bg-info',
@@ -407,32 +497,41 @@ document.addEventListener("DOMContentLoaded", function() {
             danger: 'text-bg-danger'
         };
 
+        // Crear contenedor de toasts si no existe
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '2000';
+            document.body.appendChild(toastContainer);
+        }
+
         const toast = document.createElement('div');
-        toast.className = `toast align-items-center ${colores[tipo] || 'text-bg-secondary'} border-0 position-fixed top-0 end-0 m-3`;
-        toast.style.zIndex = '2000';
+        toast.className = `toast align-items-center ${colores[tipo] || 'text-bg-secondary'} border-0`;
         toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body fw-semibold">${mensaje}</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         `;
-        document.body.appendChild(toast);
 
+        toastContainer.appendChild(toast);
         const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
         bsToast.show();
-        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
     }
 });
 </script>
 
 
-<style>
-/* Animaciones suaves */
-.notificacion-item {
-    transition: all 0.6s ease;
-}
-</style>
-
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/formularioequipo.js"></script>
+<script src="/static/js/animacion de nav-bar.js"></script>
+<script src="/static/js/notificacion.js"></script>
+<script src="/static/js/animacion_inicio.js"></script>
 </body>
 </html>
