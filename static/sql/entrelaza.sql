@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 13, 2025 at 12:16 AM
+-- Generation Time: Oct 13, 2025 at 02:59 AM
 -- Server version: 8.0.43
 -- PHP Version: 7.4.9
 
@@ -59,15 +59,17 @@ CREATE TABLE `equipos` (
   `max_integrantes` int NOT NULL,
   `creador_id` int NOT NULL,
   `privacidad` enum('publico','privado') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'publico',
-  `privado` tinyint(1) NOT NULL DEFAULT '1'
+  `privado` tinyint(1) NOT NULL DEFAULT '1',
+  `turno` enum('Matutino','Vespertino') COLLATE utf8mb4_unicode_ci DEFAULT 'Matutino'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `equipos`
 --
 
-INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `asesor`, `max_integrantes`, `creador_id`, `privacidad`, `privado`) VALUES
-(91, 'CACHETES HIJO DE PERRA ', 'ajklsndaskjdbnajk', 'adanta claudia', 5, 442, 'privado', 1);
+INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `asesor`, `max_integrantes`, `creador_id`, `privacidad`, `privado`, `turno`) VALUES
+(91, 'CACHETES HIJO DE PERRA ', 'ajklsndaskjdbnajk', 'adanta claudia', 5, 447, 'privado', 1, 'Matutino'),
+(92, 'CACHETES HIJO DE PERRA original', 'asdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakj', 'claudia chochil', 5, 450, 'privado', 1, 'Vespertino');
 
 -- --------------------------------------------------------
 
@@ -90,7 +92,12 @@ INSERT INTO `equipo_carreras` (`id`, `equipo_id`, `carrera_id`, `cantidad`) VALU
 (182, 91, 1, 0),
 (183, 91, 4, 0),
 (184, 91, 2, 0),
-(185, 91, 6, 0);
+(185, 91, 6, 0),
+(186, 92, 1, 1),
+(187, 92, 4, 1),
+(188, 92, 2, 1),
+(189, 92, 6, 1),
+(190, 92, 5, 1);
 
 -- --------------------------------------------------------
 
@@ -109,10 +116,11 @@ CREATE TABLE `equipo_integrantes` (
 --
 
 INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
-(215, 91, 397),
-(209, 91, 442),
-(211, 91, 445),
-(210, 91, 446);
+(216, 91, 397),
+(220, 91, 447),
+(219, 91, 451),
+(217, 92, 450),
+(218, 92, 452);
 
 -- --------------------------------------------------------
 
@@ -207,19 +215,22 @@ INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `tipo`, `leida`, `f
 (116, 442, 'Tu solicitud para unirte al equipo \'Alexis leandro cuevas \' fue aceptada.', 'respuesta', 1, '2025-10-12 00:41:10'),
 (117, 397, 'Tu solicitud para unirte al equipo \'Alexis leandro cuevas \' fue aceptada.', 'respuesta', 1, '2025-10-12 00:41:12'),
 (120, 397, 'Tu solicitud para unirte al equipo \'Claudia shembaum\' fue aceptada.', 'respuesta', 1, '2025-10-12 00:44:19'),
-(127, 446, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada.', 'respuesta', 0, '2025-10-12 20:54:41'),
-(128, 445, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada.', 'respuesta', 0, '2025-10-12 20:54:43'),
-(129, 444, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada.', 'respuesta', 1, '2025-10-12 20:54:44'),
-(130, 443, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada.', 'respuesta', 1, '2025-10-12 20:54:45'),
 (131, 397, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue rechazada', 'respuesta', 1, '2025-10-12 22:01:41'),
 (134, 397, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada.', 'respuesta', 1, '2025-10-12 22:05:38'),
-(135, 443, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue rechazada', 'respuesta', 1, '2025-10-12 22:10:02'),
 (138, 397, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada.', 'respuesta', 1, '2025-10-12 22:56:18'),
-(139, 443, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue rechazada', 'respuesta', 1, '2025-10-12 22:56:23'),
-(141, 444, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue rechazada', 'respuesta', 1, '2025-10-13 00:09:39'),
 (142, 442, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 00:09:39'),
-(144, 444, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue rechazada', 'respuesta', 1, '2025-10-13 00:11:18'),
-(145, 442, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 00:11:18');
+(145, 442, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 00:11:18'),
+(148, 397, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-13 02:16:51'),
+(149, 442, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:16:51'),
+(152, 452, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 0, '2025-10-13 02:24:18'),
+(153, 450, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-13 02:24:18'),
+(154, 442, ' ROBERTO MOISES CANTOR CEJA ha solicitado unirse a tu equipo \'CACHETES HIJO DE PERRA \'', 'solicitud', 1, '2025-10-13 02:43:03'),
+(155, 442, 'ATZIRI CITLALI GUADALUPE HERNANDEZ GARCIA desea volver a unirse a tu equipo \'CACHETES HIJO DE PERRA \' después de haberse salido.', 'solicitud', 1, '2025-10-13 02:43:42'),
+(156, 451, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-13 02:43:54'),
+(157, 442, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:43:54'),
+(158, 447, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-13 02:43:55'),
+(159, 442, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:43:55'),
+(160, 447, 'Claudia shembaum ha solicitado unirse a tu equipo \'CACHETES HIJO DE PERRA \'', 'solicitud', 0, '2025-10-13 02:58:15');
 
 -- --------------------------------------------------------
 
@@ -240,11 +251,11 @@ CREATE TABLE `solicitudes` (
 --
 
 INSERT INTO `solicitudes` (`solicitud_id`, `usuario_id`, `equipo_id`, `estado`, `fecha`) VALUES
-(57, 445, 91, 'aceptada', '2025-10-12 20:52:41'),
-(58, 446, 91, 'aceptada', '2025-10-12 20:53:39'),
-(61, 397, 91, 'aceptada', '2025-10-12 22:55:44'),
-(62, 443, 91, 'rechazada', '2025-10-12 22:56:02'),
-(64, 444, 91, 'rechazada', '2025-10-13 00:10:37');
+(66, 397, 91, 'aceptada', '2025-10-13 02:16:27'),
+(68, 452, 92, 'aceptada', '2025-10-13 02:23:33'),
+(69, 447, 91, 'aceptada', '2025-10-13 02:43:03'),
+(70, 451, 91, 'aceptada', '2025-10-13 02:43:42'),
+(71, 442, 91, 'pendiente', '2025-10-13 02:58:15');
 
 -- --------------------------------------------------------
 
@@ -277,21 +288,24 @@ CREATE TABLE `usuarios` (
   `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'user',
   `grado` varchar(2) NOT NULL DEFAULT '',
   `grupo` varchar(2) NOT NULL DEFAULT '',
-  `descripcion` text
+  `descripcion` text,
+  `turno` enum('Matutino','Vespertino') DEFAULT 'Matutino'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, `telefono`, `contrasena`, `role`, `grado`, `grupo`, `descripcion`) VALUES
-(23, 'Administrador', 'Administración', 'admin001', 'admin@entrelaza.com', '0000000000', 'pbkdf2:sha256:1000000$L5LcO6fdXSvc94Kx$87ba4f605378059ff31ad8bc3bd5d4aedc37d160d55e81991d778a0392a44fe2', 'admin', '', '', NULL),
-(397, 'Jose alfonso garcia jimenez', 'Informática', '8281812', 'josealfonso@alumnos.udg.mx', '192839012', 'pbkdf2:sha256:1000000$5xiVEjmwTq4uYL7J$1808692fd153bb9de9f79af76aa912ebaa8bee910556d59f0336ee26e40e64e3', 'user', '6', 'B', 'QUE ROLLO PHONK \r\ncachetes hijo de perra'),
-(442, 'Claudia shembaum', 'Informática', '1232131234', 'claudia111@alumnos.udg.mx', '9023091326', 'pbkdf2:sha256:1000000$LC3lmCgf3wRPX3rg$f50649c43d83cd0dd9f8418af674376df5150f81173a8ef0d5e3e9828d81d3a9', 'user', '6', 'B', NULL),
-(443, 'Diego guillermo gonzales franco', 'Informática', '8281912', 'diego1001@alumnos.udg.mx', '9023091323', 'pbkdf2:sha256:1000000$jY54rDhdf8SBuO7M$9f51cd581819a64434cf62d3730e40c237a51c9bcc61de3401676494a9657ef2', 'user', '6', 'B', NULL),
-(444, 'ANTONY ALBERTO LOERA CARRILLO', 'Informática', '00119922', 'antony1001@alumnos.udg.mx', '1231231232', 'pbkdf2:sha256:1000000$IE8MIdXu9MX00dfR$9f74e8ab119145fa51bfac014661a791e6a198f3e6e7784765ed4c0750194c32', 'user', '6', 'A', NULL),
-(445, 'ATZIRI CITLALI GUADALUPE HERNANDEZ GARCIA', 'Administración', '12340091', 'atiziri1001@alumnos.udg.mx', '9023737312', 'pbkdf2:sha256:1000000$ldyWxfn8Ld4HNfCN$12aed1553933069df8266e56eeea6efb008d7c8702dccad6489dc8d67831234a', 'user', '6', 'B', NULL),
-(446, ' ANGEL MARTIN CHAVEZ VENEGAS', 'Informática', '11100122', 'martin1001@alumnos.udg.mx', '9023000022', 'pbkdf2:sha256:1000000$7QrjaarRDUdUbChi$d1aee7c764006a861db79bfaef07a7023188780cbfb2789971436d3d043dbfe2', 'user', '6', 'A', NULL);
+INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, `telefono`, `contrasena`, `role`, `grado`, `grupo`, `descripcion`, `turno`) VALUES
+(23, 'Administrador', 'Administración', 'admin001', 'admin@entrelaza.com', '0000000000', 'pbkdf2:sha256:1000000$L5LcO6fdXSvc94Kx$87ba4f605378059ff31ad8bc3bd5d4aedc37d160d55e81991d778a0392a44fe2', 'admin', '', '', NULL, 'Matutino'),
+(397, 'Jose alfonso garcia jimenez', 'Informática', '8281812', 'josealfonso@alumnos.udg.mx', '192839012', 'pbkdf2:sha256:1000000$5xiVEjmwTq4uYL7J$1808692fd153bb9de9f79af76aa912ebaa8bee910556d59f0336ee26e40e64e3', 'user', '6', 'B', 'QUE ROLLO PHONK \r\ncachetes hijo de perra', 'Matutino'),
+(442, 'Claudia shembaum', 'Informática', '1232131234', 'claudia111@alumnos.udg.mx', '9023091326', 'pbkdf2:sha256:1000000$LC3lmCgf3wRPX3rg$f50649c43d83cd0dd9f8418af674376df5150f81173a8ef0d5e3e9828d81d3a9', 'user', '6', 'B', NULL, 'Matutino'),
+(447, ' ROBERTO MOISES CANTOR CEJA', 'Informática', '123401231', 'roberto1001@alumnos.udg.mx', '9290209021', 'pbkdf2:sha256:1000000$9U3REOjnsaPU7Ohw$7fe13ec2853936e06283bfe89c332b2a8e6e05928f7adf189de5a949f790592d', 'user', '6', 'A', 'QUE ROLLO PHONK CACHETES HIJO DE PERRA\r\nSEAN SERIO SIERVOS', 'Matutino'),
+(448, 'ALEJANDRA JOSSELIN AYALA VIZCAINO', 'Informática', '1231312344', 'alejandra022@alumnos.udg.mx', '902309139101', 'pbkdf2:sha256:1000000$4Sckm2iUTULgf0pN$041bb2a1835918fd74c5b9962444e8e63242b7014062fb6deb7236a2030a4740', 'user', '6', 'A', NULL, 'Vespertino'),
+(449, ' ANGEL MARTIN CHAVEZ VENEGAS', 'Informática', '1234511', 'angel1001@alumnos.udg.mx', '9023091323121', 'pbkdf2:sha256:1000000$3qdmwo7Nk2nXqsf0$2a3a7fefdb08462cd07f6358a83ab8d94030ba02eae284d0c7fe4f442a122716', 'user', '6', 'A', NULL, 'Vespertino'),
+(450, ' DIEGO GUILLERMO GONZALEZ FRANCO', 'Informática', '1234011122', 'diego1001@alumnos.udg.mx', '1231231231212', 'pbkdf2:sha256:1000000$ehTZ9IH4FiH2KAuq$741c50b49d1408d3ee8eb36ff9afb978bc79b98042f8d5c5c5df62f30f32eecb', 'user', '6', 'A', NULL, 'Vespertino'),
+(451, 'ATZIRI CITLALI GUADALUPE HERNANDEZ GARCIA', 'Administración', '1234019191', 'atiziri1001@alumnos.udg.mx', '90237370011', 'pbkdf2:sha256:1000000$9Pc28qlHVaV0Iia4$7a5faef2b3cca7bc871022f08282cccc9318adb865a81be47578619adb909b73', 'user', '6', 'A', NULL, 'Matutino'),
+(452, ' ANTONY ALBERTO LOERA CARRILLO', 'Informática', '12340100112', 'antony1001@alumnos.udg.mx', '90237399112', 'pbkdf2:sha256:1000000$nP2hnBAuOzIRpmQ5$d7f4de43875c1d2250cd291dee30dad0cd5b9781192cd5a694a8698d23a170b9', 'user', '6', 'B', NULL, 'Vespertino');
 
 --
 -- Indexes for dumped tables
@@ -375,24 +389,23 @@ ALTER TABLE `usuarios`
 ALTER TABLE `carreras`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
-ALTER TABLE equipos ADD COLUMN turno ENUM('Matutino', 'Vespertino') DEFAULT 'Matutino';
 --
 -- AUTO_INCREMENT for table `equipos`
 --
 ALTER TABLE `equipos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT for table `equipo_carreras`
 --
 ALTER TABLE `equipo_carreras`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=186;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
 
 --
 -- AUTO_INCREMENT for table `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=216;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
 
 --
 -- AUTO_INCREMENT for table `integrantes_equipo`
@@ -404,13 +417,13 @@ ALTER TABLE `integrantes_equipo`
 -- AUTO_INCREMENT for table `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=146;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=161;
 
 --
 -- AUTO_INCREMENT for table `solicitudes`
 --
 ALTER TABLE `solicitudes`
-  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT for table `solicitudes_equipo`
@@ -418,14 +431,12 @@ ALTER TABLE `solicitudes`
 ALTER TABLE `solicitudes_equipo`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
-ALTER TABLE usuarios ADD COLUMN turno ENUM('Matutino', 'Vespertino') DEFAULT 'Matutino';
 --
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=447;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=453;
 
-UPDATE usuarios SET turno = 'Matutino' WHERE turno IS NULL OR turno = '';
 --
 -- Constraints for dumped tables
 --
