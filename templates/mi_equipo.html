@@ -23,6 +23,7 @@
         </div>
     </div>
 </nav>
+
 <br><br><br><br><br><br><br><br>
 <!-- Mensajes flash -->
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -42,46 +43,88 @@
 
 
 <div class="container" style="padding-top:70px;">
-    <h2 class="mb-4 text-center">Mi proyecto</h2>
+  <h2 class="mb-4 text-center text-light">Mi Proyecto</h2>
 
-    {% if equipo %}
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">{{ equipo.nombre_proyecto }}</h5>
-            <p class="card-text">{{ equipo.descripcion }}</p>
-            <p class="card-text">
-                <strong>Integrantes:</strong> {{ equipo.integrantes | length }}/{{ equipo.max_integrantes }}
-                {% if equipo.integrantes | length >= equipo.max_integrantes %}
-                    <span class="badge bg-success ms-2">Proyecto Completo</span>
+  {% if equipo %}
+  <div class="card bg-dark text-light shadow border-0 mb-4">
+    <div class="card-body">
+      
+      <!-- Nombre del proyecto -->
+      <div class="mb-3">
+        <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
+          Nombre del proyecto
+        </h6>
+        <h4 class="fw-semibold">{{ equipo.nombre_proyecto }}</h4>
+      </div>
+
+      <!-- Descripción del proyecto -->
+      <div class="mb-3">
+        <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 0.5px;">
+          Descripción del proyecto
+        </h6>
+        <p class="card-text" style="color: rgba(255,255,255,0.85);">{{ equipo.descripcion }}</p>
+      </div>
+
+      <!-- Asesor -->
+      <div class="mb-3">
+        <strong>Asesor:</strong> {{ equipo.asesor or "No asignado" }}
+      </div>
+
+      <!-- Carreras necesarias -->
+      <div class="mb-3">
+        <strong>Carreras necesarias:</strong><br>
+        {% for carrera in equipo.carreras_necesarias %}
+          <span class="badge bg-info text-dark mb-1">{{ carrera }}</span>
+        {% else %}
+          <span class="text-muted small">No especificadas</span>
+        {% endfor %}
+      </div>
+
+      <!-- Integrantes -->
+      <div class="mb-3">
+        <strong>Integrantes ({{ equipo.integrantes | length }}/{{ equipo.max_integrantes }}):</strong>
+        {% if equipo.integrantes | length >= equipo.max_integrantes %}
+          <span class="badge bg-success ms-2">Proyecto Completo</span>
+        {% endif %}
+        <ul class="list-unstyled mt-2 mb-0">
+          {% for integrante in equipo.integrantes %}
+            <li class="d-flex align-items-center justify-content-between bg-secondary bg-opacity-10 rounded px-2 py-1 mb-1">
+              <div>
+                <span>{{ integrante.nombre_completo }}</span>
+                {% if integrante.id == equipo.creador_id %}
+                  <span class="badge bg-warning text-dark ms-1">Admin</span>
                 {% endif %}
-            </p>
-            <ul class="list-group list-group-flush mb-3">
-                {% for integrante in equipo.integrantes %}
-                    <li class="list-group-item">
-                        👤 {{ integrante.nombre_completo }} - {{ integrante.carrera }} - Grado: {{ integrante.grado }} - Grupo: {{ integrante.grupo }}
-                    </li>
-                {% endfor %}
-            </ul>
-            <p class="card-text"><strong>Asesor:</strong> {{ equipo.asesor }}</p>
-            <p class="card-text"><strong>Carreras necesarias:</strong> {{ equipo.carreras_necesarias | join(', ') }}</p>
-            
-            <!-- Botón para salir del equipo -->
-<a href="{{ url_for('salir', equipo_id=equipo.id) }}" class="btn btn-danger mt-2"
-   onclick="return confirm('¿Seguro que quieres salir del equipo?')">
-    Salir del equipo
-</a>
+                <small class="d-block text-muted">
+                  {{ integrante.carrera }} | Grado: {{ integrante.grado }} | Grupo: {{ integrante.grupo }}
+                </small>
+              </div>
+              <a href="{{ url_for('perfil', id=integrante.id) }}" class="btn btn-sm btn-outline-light">Ver perfil</a>
+            </li>
+          {% else %}
+            <li class="text-muted small">Sin integrantes</li>
+          {% endfor %}
+        </ul>
+      </div>
 
-        </div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#integrantesModal">
-  enviar mensaje a los integrantes
-</button>
-
+      <!-- Botones -->
+      <div class="d-flex flex-wrap gap-2 mt-4">
+        <a href="{{ url_for('salir', equipo_id=equipo.id) }}"
+           class="btn btn-danger flex-grow-1"
+           onclick="return confirm('¿Seguro que quieres salir del equipo?')">
+          Salir del equipo
+        </a>
+        <button type="button" class="btn btn-primary flex-grow-1"
+                data-bs-toggle="modal" data-bs-target="#integrantesModal">
+          Enviar mensaje a los integrantes
+        </button>
+      </div>
     </div>
-    {% else %}
-        <p class="text-center">No estás en ningún equipo.</p>
-    {% endif %}
-    
+  </div>
+  {% else %}
+    <p class="text-center text-light">No estás en ningún equipo.</p>
+  {% endif %}
 </div>
+
 
 
 
@@ -89,32 +132,43 @@
 
 <!-- Modal -->
 <div class="modal fade" id="integrantesModal" tabindex="-1" aria-labelledby="integrantesModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 style="color: black;" id="integrantesModalLabel">Integrantes del proyecto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark text-light border-0 shadow">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-info fw-bold" id="integrantesModalLabel">
+          Integrantes del proyecto
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      <div class="modal-body">
-<ul class="list-group">
-{% for integrante in equipo.integrantes %}
-  <li class="list-group-item d-flex justify-content-between align-items-center">
-    👤 {{ integrante.nombre_completo }} - {{ integrante.carrera }}
-    <div>
-      {% if integrante.telefono %}
-        <a href="https://wa.me/{{ integrante.telefono }}" target="_blank" class="btn btn-success btn-sm me-1">💬 WhatsApp</a>
-      {% endif %}
-      <!-- BOTÓN VER PERFIL -->
-      <a href="{{ url_for('perfil', id=integrante.id) }}" class="btn btn-info btn-sm">Ver perfil</a>
-    </div>
-  </li>
-{% endfor %}
-</ul>
 
+      <div class="modal-body">
+        <ul class="list-unstyled">
+          {% for integrante in equipo.integrantes %}
+          <li class="d-flex align-items-center justify-content-between bg-secondary bg-opacity-10 rounded px-3 py-2 mb-2">
+            <div>
+              <span class="fw-semibold">{{ integrante.nombre_completo }}</span>
+              {% if integrante.id == equipo.creador_id %}
+                <span class="badge bg-warning text-dark ms-1">Admin</span>
+              {% endif %}
+              <small class="d-block text-muted">
+                {{ integrante.carrera }} | Grado: {{ integrante.grado }} | Grupo: {{ integrante.grupo }}
+              </small>
+            </div>
+            {% if integrante.telefono %}
+            <a href="https://wa.me/{{ integrante.telefono }}" target="_blank"
+               class="btn btn-success btn-sm">💬 WhatsApp</a>
+            {% endif %}
+          </li>
+          {% else %}
+          <p class="text-muted">No hay integrantes registrados aún.</p>
+          {% endfor %}
+        </ul>
       </div>
     </div>
   </div>
 </div>
+
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -569,7 +569,7 @@ def unirse(equipo_id):
     usuario = session['usuario']
     cursor = mysql.connection.cursor()
 
-    # Si ya pertenece a un equipo, no puede unirse
+    # Verificar que no pertenece a un equipo
     cursor.execute('SELECT * FROM equipo_integrantes WHERE usuario_id = %s', (usuario['id'],))
     if cursor.fetchone():
         flash("Ya perteneces a un equipo y no puedes unirte a otro", "danger")
@@ -601,13 +601,31 @@ def unirse(equipo_id):
         return redirect(url_for('index'))
     else:
         # Equipo privado -> crear solicitud si no existe
-        cursor.execute('SELECT * FROM solicitudes_equipo WHERE usuario_id=%s AND equipo_id=%s AND estado="pendiente"', (usuario['id'], equipo_id))
+        cursor.execute('SELECT * FROM solicitudes WHERE usuario_id=%s AND equipo_id=%s AND estado="pendiente"', (usuario['id'], equipo_id))
         if cursor.fetchone():
             flash("Ya enviaste una solicitud y está pendiente", "info")
             cursor.close()
             return redirect(url_for('index'))
 
-        cursor.execute('INSERT INTO solicitudes_equipo (usuario_id, equipo_id) VALUES (%s, %s)', (usuario['id'], equipo_id))
+        # ✅ USAR TABLA 'solicitudes' en lugar de 'solicitudes_equipo'
+        cursor.execute('INSERT INTO solicitudes (usuario_id, equipo_id, estado) VALUES (%s, %s, "pendiente")', (usuario['id'], equipo_id))
+        solicitud_id = cursor.lastrowid
+        
+        # 🔥 CREAR NOTIFICACIONES PARA AMBOS
+        # 1. Notificación para el ADMIN
+        mensaje_admin = f"{usuario['nombre_completo']} ha solicitado unirse a tu equipo '{equipo['nombre_proyecto']}'"
+        cursor.execute(
+            'INSERT INTO notificaciones (usuario_id, mensaje, tipo) VALUES (%s, %s, "solicitud")',
+            (equipo['creador_id'], mensaje_admin)
+        )
+        
+        # 2. Notificación para el USUARIO
+        mensaje_usuario = f"Solicitud enviada al equipo '{equipo['nombre_proyecto']}'. Espera la respuesta del administrador."
+        cursor.execute(
+            'INSERT INTO notificaciones (usuario_id, mensaje, tipo) VALUES (%s, %s, "solicitud")',
+            (usuario['id'], mensaje_usuario)
+        )
+        
         mysql.connection.commit()
         cursor.close()
         flash("Solicitud enviada. El creador del equipo la revisará.", "success")
@@ -958,9 +976,9 @@ def aceptar_solicitud_modal(id, usuario_id):
     usuario_actual = session["usuario"]["id"]
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # 🔍 Obtener datos de la solicitud y del equipo
+    # Obtener datos de la solicitud y del equipo
     cursor.execute("""
-        SELECT s.equipo_id, e.creador_id, e.nombre_proyecto
+        SELECT s.solicitud_id, s.equipo_id, e.creador_id, e.nombre_proyecto
         FROM solicitudes s
         JOIN equipos e ON s.equipo_id = e.id
         WHERE s.solicitud_id = %s
@@ -978,7 +996,7 @@ def aceptar_solicitud_modal(id, usuario_id):
 
     equipo_id = solicitud['equipo_id']
 
-    # ✅ Verificar límite de 5 miembros (incluye al creador)
+    # Verificar límite de miembros
     cursor.execute("""
         SELECT COUNT(*) AS total
         FROM equipo_integrantes
@@ -990,23 +1008,31 @@ def aceptar_solicitud_modal(id, usuario_id):
         cursor.close()
         return jsonify({'error': 'El equipo ya está completo (máximo 5 miembros).'}), 400
 
-    # ✅ Aceptar solicitud
+    # Aceptar solicitud
     cursor.execute("UPDATE solicitudes SET estado = 'aceptada' WHERE solicitud_id = %s", (id,))
 
-    # ➕ Agregar integrante al equipo
+    # Agregar integrante al equipo
     cursor.execute("""
         INSERT IGNORE INTO equipo_integrantes (equipo_id, usuario_id)
         VALUES (%s, %s)
     """, (equipo_id, usuario_id))
 
-    # 📢 Crear notificación de respuesta para el solicitante
-    mensaje = f"Tu solicitud para unirte al equipo '{solicitud['nombre_proyecto']}' fue aceptada."
+    # 🔥 NOTIFICACIONES PARA AMBOS
+    # 1. Notificación para el USUARIO aceptado
+    mensaje_aceptado = f"¡Felicidades! Fuiste aceptado en el equipo '{solicitud['nombre_proyecto']}'"
     cursor.execute("""
         INSERT INTO notificaciones (usuario_id, mensaje, tipo, leida, fecha)
         VALUES (%s, %s, 'respuesta', 0, NOW())
-    """, (usuario_id, mensaje))
+    """, (usuario_id, mensaje_aceptado))
 
-    # ✅ Eliminar solo la notificación relacionada a esta solicitud (no todas)
+    # 2. Notificación para el ADMIN (confirmación)
+    mensaje_admin = f"Aceptaste a un usuario en tu equipo '{solicitud['nombre_proyecto']}'"
+    cursor.execute("""
+        INSERT INTO notificaciones (usuario_id, mensaje, tipo, leida, fecha)
+        VALUES (%s, %s, 'respuesta', 0, NOW())
+    """, (usuario_actual, mensaje_admin))
+
+    # Eliminar notificación de solicitud del admin
     cursor.execute("""
         DELETE FROM notificaciones
         WHERE tipo = 'solicitud'
@@ -1029,36 +1055,41 @@ def rechazar_solicitud_admin(id, usuario_id):
     usuario_actual = session["usuario"]["id"]
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # 🔍 Obtener datos de la solicitud y del equipo
+    # Obtener datos de la solicitud y del equipo
     cursor.execute("""
-        SELECT s.equipo_id, e.creador_id
+        SELECT s.solicitud_id, s.equipo_id, e.creador_id, e.nombre_proyecto
         FROM solicitudes s
         JOIN equipos e ON s.equipo_id = e.id
         WHERE s.solicitud_id = %s
     """, (id,))
     solicitud = cursor.fetchone()
 
-    print(f"🧩 Rechazar: solicitud={solicitud}, usuario_actual={usuario_actual}")
-
     if solicitud and solicitud['creador_id'] == usuario_actual:
-        # ❌ Rechazar solicitud
+        # Rechazar solicitud
         cursor.execute("UPDATE solicitudes SET estado = 'rechazada' WHERE solicitud_id = %s", (id,))
 
-        # 📢 Crear notificación al solicitante
-        cursor.execute("SELECT nombre_proyecto FROM equipos WHERE id = %s", (solicitud['equipo_id'],))
-        equipo = cursor.fetchone()
-        mensaje = f"Tu solicitud para unirte al equipo '{equipo['nombre_proyecto']}' fue rechazada"
+        # 🔥 NOTIFICACIONES PARA AMBOS
+        # 1. Notificación para el USUARIO rechazado
+        mensaje_rechazado = f"Tu solicitud para unirte al equipo '{solicitud['nombre_proyecto']}' fue rechazada"
         cursor.execute("""
             INSERT INTO notificaciones (usuario_id, mensaje, tipo, leida, fecha)
             VALUES (%s, %s, 'respuesta', 0, NOW())
-        """, (usuario_id, mensaje))
+        """, (usuario_id, mensaje_rechazado))
 
-        # ❌ Borrar notificación tipo solicitud del admin
+        # 2. Notificación para el ADMIN (confirmación)
+        mensaje_admin = f"Rechazaste una solicitud para tu equipo '{solicitud['nombre_proyecto']}'"
+        cursor.execute("""
+            INSERT INTO notificaciones (usuario_id, mensaje, tipo, leida, fecha)
+            VALUES (%s, %s, 'respuesta', 0, NOW())
+        """, (usuario_actual, mensaje_admin))
+
+        # Borrar notificación tipo solicitud del admin
         cursor.execute("""
             DELETE FROM notificaciones 
             WHERE tipo = 'solicitud'
+              AND usuario_id = %s
               AND mensaje LIKE %s
-        """, (f"%{equipo['nombre_proyecto']}%",))
+        """, (usuario_actual, f"%{solicitud['nombre_proyecto']}%"))
 
         mysql.connection.commit()
         cursor.close()
@@ -1089,7 +1120,7 @@ def notificaciones_data():
     notificaciones = []
 
     if equipos_creados:
-        # ==== PARA EL CREADOR: traemos solo la solicitud más reciente por (usuario, equipo) ====
+        # ==== PARA EL CREADOR: traemos solicitudes pendientes ====
         cursor.execute("""
             SELECT
                 s.solicitud_id,
@@ -1116,11 +1147,10 @@ def notificaciones_data():
         """, (usuario_id,))
 
         filas = cursor.fetchall()
-        # Construimos las "notificaciones" a partir de cada solicitud (una por fila)
         for f in filas:
             msg = f"{f['solicitante_nombre']} ha solicitado unirse a tu equipo '{f['nombre_proyecto']}'"
             notificaciones.append({
-                'id': f['solicitud_id'],            # id único para esta entrada (usamos la solicitud_id)
+                'id': f['solicitud_id'],
                 'mensaje': msg,
                 'fecha': f['fecha'],
                 'tipo': 'solicitud',
@@ -1134,7 +1164,50 @@ def notificaciones_data():
             })
 
     else:
-        # ==== USUARIO normal: mostramos sus notificaciones reales de la tabla notificaciones ====
+        # ==== USUARIO NORMAL: mostrar sus propias solicitudes y notificaciones ====
+        
+        # 1. Primero traer las SOLICITUDES del usuario
+        cursor.execute("""
+            SELECT
+                s.solicitud_id,
+                s.equipo_id,
+                s.estado AS solicitud_estado,
+                s.fecha,
+                e.nombre_proyecto
+            FROM solicitudes s
+            JOIN equipos e ON s.equipo_id = e.id
+            WHERE s.usuario_id = %s
+            ORDER BY s.fecha DESC
+            LIMIT 20
+        """, (usuario_id,))
+        
+        solicitudes_usuario = cursor.fetchall()
+        
+        for solicitud in solicitudes_usuario:
+            if solicitud['solicitud_estado'] == 'pendiente':
+                mensaje = f"Tu solicitud para unirte al equipo '{solicitud['nombre_proyecto']}' está pendiente"
+            elif solicitud['solicitud_estado'] == 'aceptada':
+                mensaje = f"¡Felicidades! Tu solicitud para el equipo '{solicitud['nombre_proyecto']}' fue aceptada"
+            elif solicitud['solicitud_estado'] == 'rechazada':
+                mensaje = f"Tu solicitud para unirte al equipo '{solicitud['nombre_proyecto']}' fue rechazada"
+            else:
+                mensaje = f"Tu solicitud para el equipo '{solicitud['nombre_proyecto']}' - {solicitud['solicitud_estado']}"
+            
+            notificaciones.append({
+                'id': f"solicitud_{solicitud['solicitud_id']}",
+                'mensaje': mensaje,
+                'fecha': solicitud['fecha'],
+                'tipo': 'solicitud_usuario',
+                'leida': 0,
+                'solicitud_id': solicitud['solicitud_id'],
+                'solicitud_estado': solicitud['solicitud_estado'],
+                'solicitante_id': usuario_id,
+                'equipo_id': solicitud['equipo_id'],
+                'nombre_proyecto': solicitud['nombre_proyecto'],
+                'creador_id': None
+            })
+
+        # 2. Luego traer las NOTIFICACIONES normales del usuario
         cursor.execute("""
             SELECT 
                 n.id,
@@ -1148,10 +1221,16 @@ def notificaciones_data():
             ORDER BY n.fecha DESC
             LIMIT 50
         """, (usuario_id,))
-        filas = cursor.fetchall()
-        for f in filas:
-            notificaciones.append(f)
+        
+        notifs_normales = cursor.fetchall()
+        for notif in notifs_normales:
+            # Evitar duplicados con las solicitudes que ya mostramos
+            if not any(n.get('solicitud_id') for n in notificaciones if n.get('mensaje') == notif['mensaje']):
+                notificaciones.append(notif)
 
+    # Ordenar todas las notificaciones por fecha
+    notificaciones.sort(key=lambda x: x['fecha'], reverse=True)
+    
     cursor.close()
     return render_template('_notificaciones.html', notificaciones=notificaciones)
 
@@ -1226,15 +1305,29 @@ def inject_notificaciones():
     if 'usuario' in session:
         usuario_id = session['usuario']['id']
         cursor = mysql.connection.cursor()
+        
+        # ✅ CONTAR: Notificaciones NO LEÍDAS + Solicitudes pendientes del usuario
         cursor.execute('''
-            SELECT COUNT(*) AS total
-            FROM solicitudes s
-            JOIN equipos e ON s.equipo_id = e.id
-            WHERE s.estado = "pendiente" AND e.creador_id = %s
+            SELECT COUNT(*) AS total 
+            FROM notificaciones 
+            WHERE usuario_id = %s AND leida = FALSE
         ''', (usuario_id,))
-        pendiente = cursor.fetchone()['total']
+        notificaciones_no_leidas = cursor.fetchone()['total']
+        
+        # ✅ CONTAR: Solicitudes pendientes del usuario (para mostrar en el contador)
+        cursor.execute('''
+            SELECT COUNT(*) AS total 
+            FROM solicitudes 
+            WHERE usuario_id = %s AND estado = 'pendiente'
+        ''', (usuario_id,))
+        solicitudes_pendientes = cursor.fetchone()['total']
+        
+        # ✅ TOTAL: Notificaciones + Solicitudes pendientes
+        total_pendientes = notificaciones_no_leidas + solicitudes_pendientes
+        
         cursor.close()
-        return dict(notificaciones_pendientes=pendiente)
+        return dict(notificaciones_pendientes=total_pendientes)
+    
     return dict(notificaciones_pendientes=0)
 
 

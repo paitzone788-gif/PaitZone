@@ -1,6 +1,6 @@
 /* === NAVBAR MODERNA PREMIUM === */
 .custom-navbar {
-  background: rgba(15, 15, 15, 0.7);
+  background: rgba(16, 82, 123, 0.7);
   backdrop-filter: blur(10px);
   transition: all 0.4s ease;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -19,7 +19,7 @@
 }
 
 .navbar-brand:hover {
-  color: #ca8205 !important;
+  color: #5f8ea0 !important;
   text-shadow: 0 0 8px rgba(202, 130, 5, 0.6);
 }
 
@@ -81,7 +81,7 @@
 
 .btn-outline-light:hover {
   background-color: #fff;
-  color: #000;
+  color: #1a467d;
 }
 
 /* === HAMBURGUESA === */
@@ -101,34 +101,7 @@
 }
 
 /* === ESTADO SCROLLED === */
-.navbar-shrink {
-  background: rgba(174, 175, 182, 0.95);
-  backdrop-filter: blur(15px);
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-}
 
-.navbar-shrink .navbar-brand {
-  color: #3c1111 !important;
-}
-
-.navbar-shrink .nav-link {
-  color: #000 !important;
-}
-
-.navbar-shrink .nav-link:hover::after {
-  background: #ca8205;
-}
-
-.navbar-shrink .btn-outline-light {
-  border: 1px solid #000;
-  color: #000;
-}
-
-.navbar-shrink .btn-outline-light:hover {
-  background-color: #000;
-  color: #fff;
-}
 
 /* === EFECTOS PREMIUM === */
 .navbar:hover {
