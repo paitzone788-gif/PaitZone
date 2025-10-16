@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 16, 2025 at 12:16 AM
+-- Generation Time: Oct 16, 2025 at 01:00 AM
 -- Server version: 8.0.43
 -- PHP Version: 7.4.9
 
@@ -60,7 +60,7 @@ CREATE TABLE `equipos` (
   `creador_id` int NOT NULL,
   `privacidad` enum('publico','privado') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'publico',
   `privado` tinyint(1) NOT NULL DEFAULT '1',
-  `turno` enum('Matutino','Vespertino') COLLATE utf8mb4_unicode_ci DEFAULT 'Matutino'
+  `turno` enum('Matutino','Vespertino') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Matutino'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -117,7 +117,6 @@ CREATE TABLE `equipo_integrantes` (
 
 INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
 (221, 91, 397),
-(222, 91, 442),
 (220, 91, 447),
 (219, 91, 451),
 (218, 92, 452);
@@ -232,9 +231,10 @@ INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `tipo`, `leida`, `f
 (159, 442, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:43:55'),
 (162, 397, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:50'),
 (163, 447, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:50'),
-(164, 442, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-15 23:40:51'),
+(164, 442, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:51'),
 (165, 447, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:51'),
-(166, 452, ' DIEGO GUILLERMO GONZALEZ FRANCO ha solicitado unirse a tu equipo \'CACHETES HIJO DE PERRA original\'', 'solicitud', 1, '2025-10-16 00:04:41');
+(167, 450, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA original\' fue rechazada', 'respuesta', 0, '2025-10-16 00:36:52'),
+(168, 452, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-16 00:36:52');
 
 -- --------------------------------------------------------
 
@@ -260,7 +260,7 @@ INSERT INTO `solicitudes` (`solicitud_id`, `usuario_id`, `equipo_id`, `estado`, 
 (70, 451, 91, 'aceptada', '2025-10-13 02:43:42'),
 (71, 442, 91, 'aceptada', '2025-10-13 02:58:15'),
 (72, 397, 91, 'aceptada', '2025-10-15 23:35:11'),
-(73, 450, 92, 'pendiente', '2025-10-16 00:04:41');
+(73, 450, 92, 'rechazada', '2025-10-16 00:04:41');
 
 -- --------------------------------------------------------
 
@@ -422,7 +422,7 @@ ALTER TABLE `integrantes_equipo`
 -- AUTO_INCREMENT for table `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=167;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
 
 --
 -- AUTO_INCREMENT for table `solicitudes`
@@ -452,16 +452,6 @@ ALTER TABLE `usuarios`
 ALTER TABLE `equipos`
   ADD CONSTRAINT `equipos_ibfk_1` FOREIGN KEY (`creador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
-CREATE TABLE sugerencias (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    usuario_id INT,
-    puntos_clave TEXT,
-    opiniones TEXT,
-    mejoras TEXT,
-    estado ENUM('pendiente', 'revisado', 'implementado') DEFAULT 'pendiente',
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
-);
 --
 -- Constraints for table `equipo_carreras`
 --
