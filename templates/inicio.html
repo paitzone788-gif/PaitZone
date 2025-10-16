@@ -8,7 +8,7 @@
   </div>
 </div>
 
-<!-- Navbar -->
+<!-- Navbar de inicio solamente -->
 <nav id="mainNavbar" class="navbar navbar-expand-lg custom-navbar fixed-top shadow-sm py-3">
   <div class="container-fluid d-flex align-items-center justify-content-between px-4">
 
@@ -61,14 +61,16 @@
 
 <!--Estilo para el nav de SOLO INICIO.HTML XD -->
 <style>
-    /* Estilo del navbar */
+  body {
+  padding-top: 80px; 
+}
 .custom-navbar {
   background-color: rgba(6, 26, 62, 0.95);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Logo */
+
 .custom-navbar .navbar-brand {
   color: #fff;
   font-size: 1.4rem;
@@ -79,7 +81,6 @@
   color: #0dcaf0;
 }
 
-/* Enlaces blancos con hover azul */
 .nav-link-white {
   color: #ffffff !important;
   transition: color 0.3s ease, transform 0.2s ease;
@@ -90,14 +91,12 @@
   transform: translateY(-2px);
 }
 
-/* Menú hamburguesa */
 .navbar-toggler {
   background: none;
   border: none;
   outline: none;
 }
 
-/* Fondo colapsado en móvil */
 @media (max-width: 991px) {
   .custom-navbar .navbar-collapse {
     background-color: rgba(48, 81, 121, 0.95);
@@ -107,7 +106,6 @@
 }
 
 </style>
-<!--js de la nav de Inicio.html  XD -->
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -129,7 +127,6 @@
 
 
 <!--br para separar nav bar de la info XD -->
-<br><br><br><br><br>
 
 
 <!-- aqui pueden pegar Información sobre la app -->

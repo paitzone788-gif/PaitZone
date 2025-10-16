@@ -10,6 +10,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="/static/css/notificacion.css">
 <link rel="stylesheet" href="/static/css/animacion.css">
+<link rel="stylesheet" href="/static/css/noticias.css">
+<link rel="stylesheet" href="/static/css/estilo_de_filtro.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
 <style>
@@ -159,74 +161,227 @@
         {% endwith %}
         <!-- Mensaje informativo - SOLO SI NO TIENES EQUIPO -->
         {% if not mi_proyecto %}
-        <div class="alert alert-info-custom mb-4">
-          <h6 class="mb-2">🔍 Filtros aplicados:</h6>
-          <div class="row">
-            <div class="col-md-6">
-              <strong>Carrera:</strong> {{ usuario.carrera }}
-            </div>
-            <div class="col-md-6">
-              <strong>Turno:</strong> 
-              <span class="badge {% if usuario.turno == 'Matutino' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
-                {{ usuario.turno }}
-              </span>
-            </div>
-          </div>
-          <div class="mt-2">
-            <strong>Equipos encontrados:</strong> {{ equipos | length }}
-          </div>
-        </div>
+<div class="filter-card premium-card mb-4">
+  <div class="filter-header">
+    <div class="filter-icon">
+      <i class="fas fa-search"></i>
+    </div>
+    <h5 class="filter-title">Filtros Aplicados</h5>
+  </div>
+  <div class="filter-body">
+    <div class="filter-row">
+      <div class="filter-item">
+        <span class="filter-label">Carrera:</span>
+        <span class="filter-value">{{ usuario.carrera }}</span>
+      </div>
+      <div class="filter-item">
+        <span class="filter-label">Turno:</span>
+        <span class="badge-custom {% if usuario.turno == 'Matutino' %}badge-matutino{% elif usuario.turno == 'Vespertino' %}badge-vespertino{% else %}badge-nocturno{% endif %}">
+          {{ usuario.turno }}
+        </span>
+      </div>
+      
+    </div>
+    <div class="results-count">
+      <span class="filter-label">Equipos encontrados:</span>
+      <span class="count-value">{{ equipos | length }}</span>
+    </div>
+  </div>
+</div>
         {% endif %}
 
         <!-- MOSTRAR NOTICIAS DEL USUARIO -->
         {% if mi_proyecto %}
-        <div class="card mb-4 shadow-sm border-0">
-            <div class="card-body">
-                <h5 class="card-title text-light">Noticias y Actualizaciones</h5>
-                <p class="card-text text-light">Aquí puedes mostrar información relevante, anuncios de la plataforma o tips para tu proyecto.</p>
-
-                <!-- CARRUSEL CON CAPTION Y BOTÓN -->
-                <div id="carouselProyecto" class="carousel slide mb-4" data-bs-ride="carousel">
-                    <div class="carousel-inner rounded-3">
-                        <div class="carousel-item active">
-                            <img src="/static/img/n1.jpg" class="d-block w-100" alt="Imagen 1" style="height: 300px; object-fit: cover;">
-                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
-                                <h5>Título de la noticia 1</h5>
-                                <p>Descripción corta o resumen de la noticia 1.</p>
-                                <a href="/" class="btn btn-primary btn-sm">Leer más</a>
-                            </div>
-                        </div>
-
-                        <div class="carousel-item">
-                            <img src="/static/img/n2.jpeg" class="d-block w-100" alt="Imagen 2" style="height: 300px; object-fit: cover;">
-                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
-                                <h5>Título de la noticia 2</h5>
-                                <p>Descripción corta o resumen de la noticia 2.</p>
-                                <a href="/" class="btn btn-primary btn-sm">Leer más</a>
-                            </div>
-                        </div>
-
-                        <div class="carousel-item">
-                            <img src="/static/img/n3.jpeg" class="d-block w-100" alt="Imagen 3" style="height: 300px; object-fit: cover;">
-                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
-                                <h5>Título de la noticia 3</h5>
-                                <p>Descripción corta o resumen de la noticia 3.</p>
-                                <a href="" class="btn btn-primary btn-sm">Leer más</a>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselProyecto" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Anterior</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselProyecto" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Siguiente</span>
-                    </button>
-                </div>
+<section class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card shadow-lg border-0">
+        <!-- Cabecera de la tarjeta -->
+        <div class="card-header bg-primary text-white py-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h2 class="h4 mb-1 fw-bold"><i class="fas fa-newspaper me-2"></i>Noticias y Actualizaciones</h2>
+              <p class="mb-0 opacity-75">Mantente informado sobre las novedades de la plataforma</p>
             </div>
+            <div class="d-none d-md-block">
+              <span class="badge bg-light text-primary fs-6">3 Nuevas</span>
+            </div>
+          </div>
         </div>
+        
+        <!-- Cuerpo principal con carrusel -->
+        <div class="card-body p-0">
+          <!-- Carrusel de noticias destacadas -->
+          <div id="carouselNoticias" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+              <button type="button" data-bs-target="#carouselNoticias" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+              <button type="button" data-bs-target="#carouselNoticias" data-bs-slide-to="1" aria-label="Slide 2"></button>
+              <button type="button" data-bs-target="#carouselNoticias" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+            
+            <div class="carousel-inner">
+              <!-- Noticia destacada 1 -->
+              <div class="carousel-item active">
+                <div class="row g-0 align-items-stretch">
+                  <div class="col-md-6">
+                    <img src="/static/img/n1.jpg" class="img-fluid h-100 w-100" alt="Noticia 1" style="object-fit: cover; min-height: 300px;">
+                  </div>
+                  <div class="col-md-6 d-flex align-items-center">
+                    <div class="p-4 p-lg-5">
+                      <span class="badge bg-danger mb-2">Destacado</span>
+                      <h3 class="h4 mb-3">Nueva función de colaboración en equipo</h3>
+                      <p class="text-muted mb-4">Hemos implementado herramientas mejoradas para que los equipos puedan trabajar de manera más eficiente en sus proyectos académicos.</p>
+                      <div class="d-flex align-items-center justify-content-between">
+                        <a href="/noticia-1" class="btn btn-primary px-4">Leer más <i class="fas fa-arrow-right ms-2"></i></a>
+                        <small class="text-muted">Hace 2 días</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Noticia destacada 2 -->
+              <div class="carousel-item">
+                <div class="row g-0 align-items-stretch">
+                  <div class="col-md-6">
+                    <img src="/static/img/n2.jpeg" class="img-fluid h-100 w-100" alt="Noticia 2" style="object-fit: cover; min-height: 300px;">
+                  </div>
+                  <div class="col-md-6 d-flex align-items-center">
+                    <div class="p-4 p-lg-5">
+                      <span class="badge bg-success mb-2">Actualización</span>
+                      <h3 class="h4 mb-3">Mejoras en la interfaz de usuario</h3>
+                      <p class="text-muted mb-4">Hemos rediseñado completamente la experiencia de usuario para hacerla más intuitiva y accesible para todos los estudiantes.</p>
+                      <div class="d-flex align-items-center justify-content-between">
+                        <a href="/noticia-2" class="btn btn-primary px-4">Leer más <i class="fas fa-arrow-right ms-2"></i></a>
+                        <small class="text-muted">Hace 1 semana</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Noticia destacada 3 -->
+              <div class="carousel-item">
+                <div class="row g-0 align-items-stretch">
+                  <div class="col-md-6">
+                    <img src="/static/img/n3.jpeg" class="img-fluid h-100 w-100" alt="Noticia 3" style="object-fit: cover; min-height: 300px;">
+                  </div>
+                  <div class="col-md-6 d-flex align-items-center">
+                    <div class="p-4 p-lg-5">
+                      <span class="badge bg-warning text-dark mb-2">Consejo</span>
+                      <h3 class="h4 mb-3">Cómo encontrar el equipo perfecto</h3>
+                      <p class="text-muted mb-4">Descubre estrategias efectivas para encontrar compañeros de equipo que complementen tus habilidades y objetivos académicos.</p>
+                      <div class="d-flex align-items-center justify-content-between">
+                        <a href="/noticia-3" class="btn btn-primary px-4">Leer más <i class="fas fa-arrow-right ms-2"></i></a>
+                        <small class="text-muted">Hace 2 semanas</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselNoticias" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon bg-primary rounded-circle p-3" aria-hidden="true"></span>
+              <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselNoticias" data-bs-slide="next">
+              <span class="carousel-control-next-icon bg-primary rounded-circle p-3" aria-hidden="true"></span>
+              <span class="visually-hidden">Siguiente</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Sección de noticias adicionales -->
+        <div class="p-4 border-top">
+          <h4 class="mb-4 text-center">Más Noticias Recientes</h4>
+          
+          <div class="row g-4">
+            <!-- Noticia adicional 1 -->
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 border-0 shadow-sm">
+                <img src="/static/img/n4.jpg" class="card-img-top" alt="Noticia 4" style="height: 180px; object-fit: cover;">
+                <div class="card-body">
+                  <span class="badge bg-info mb-2">Tutorial</span>
+                  <h5 class="card-title">Guía para crear tu primer proyecto</h5>
+                  <p class="card-text text-muted small">Aprende paso a paso cómo configurar y gestionar tu primer proyecto en la plataforma.</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <a href="#" class="btn btn-outline-primary btn-sm">Leer más</a>
+                    <small class="text-muted">Hace 3 semanas</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Noticia adicional 2 -->
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 border-0 shadow-sm">
+                <img src="/static/img/n5.jpg" class="card-img-top" alt="Noticia 5" style="height: 180px; object-fit: cover;">
+                <div class="card-body">
+                  <span class="badge bg-secondary mb-2">Evento</span>
+                  <h5 class="card-title">Webinar: Colaboración efectiva</h5>
+                  <p class="card-text text-muted small">Participa en nuestro próximo webinar sobre técnicas de colaboración en equipos académicos.</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <a href="#" class="btn btn-outline-primary btn-sm">Leer más</a>
+                    <small class="text-muted">Hace 1 mes</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Noticia adicional 3 -->
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 border-0 shadow-sm">
+                <img src="/static/img/n6.jpg" class="card-img-top" alt="Noticia 6" style="height: 180px; object-fit: cover;">
+                <div class="card-body">
+                  <span class="badge bg-success mb-2">Logro</span>
+                  <h5 class="card-title">10,000 usuarios registrados</h5>
+                  <p class="card-text text-muted small">Celebramos haber alcanzado la marca de 10,000 estudiantes usando nuestra plataforma.</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <a href="#" class="btn btn-outline-primary btn-sm">Leer más</a>
+                    <small class="text-muted">Hace 2 meses</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <!-- Llamada a la acción -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="bg-primary text-white rounded p-4 text-center">
+            <h5 class="mb-3">¿Tienes alguna sugerencia?</h5>
+            <p class="mb-3">Tu opinión es importante para nosotros. Ayúdanos a mejorar la plataforma.</p>
+            <a href="{{ url_for('sugerencias') }}" class="btn btn-light">
+                <i class="fas fa-paper-plane me-2"></i>Enviar sugerencia
+            </a>
+        </div>
+    </div>
+</div>
+        </div>
+        
+        <!-- Pie de la tarjeta -->
+        <div class="card-footer bg-light py-3 text-center">
+          <a href="/todas-las-noticias" class="text-decoration-none fw-semibold">
+            Ver todas las noticias <i class="fas fa-chevron-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
         {% endif %}
+
+
+
+
 
         <!-- MOSTRAR EQUIPOS DISPONIBLES SOLO SI NO HAY PROYECTO -->
         {% if not mi_proyecto %}
@@ -336,6 +491,8 @@
         {% endif %}
     </div>
 </div>
+
+
 
 <!-- MODALES Y SCRIPTS -->
 <!-- Modal de Notificaciones -->

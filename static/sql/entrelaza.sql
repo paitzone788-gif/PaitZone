@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 13, 2025 at 02:59 AM
+-- Generation Time: Oct 16, 2025 at 12:16 AM
 -- Server version: 8.0.43
 -- PHP Version: 7.4.9
 
@@ -69,7 +69,7 @@ CREATE TABLE `equipos` (
 
 INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `asesor`, `max_integrantes`, `creador_id`, `privacidad`, `privado`, `turno`) VALUES
 (91, 'CACHETES HIJO DE PERRA ', 'ajklsndaskjdbnajk', 'adanta claudia', 5, 447, 'privado', 1, 'Matutino'),
-(92, 'CACHETES HIJO DE PERRA original', 'asdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakj', 'claudia chochil', 5, 450, 'privado', 1, 'Vespertino');
+(92, 'CACHETES HIJO DE PERRA original', 'asdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakj', 'claudia chochil', 5, 452, 'privado', 1, 'Vespertino');
 
 -- --------------------------------------------------------
 
@@ -116,10 +116,10 @@ CREATE TABLE `equipo_integrantes` (
 --
 
 INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
-(216, 91, 397),
+(221, 91, 397),
+(222, 91, 442),
 (220, 91, 447),
 (219, 91, 451),
-(217, 92, 450),
 (218, 92, 452);
 
 -- --------------------------------------------------------
@@ -220,17 +220,21 @@ INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `tipo`, `leida`, `f
 (138, 397, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA \' fue aceptada.', 'respuesta', 1, '2025-10-12 22:56:18'),
 (142, 442, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 00:09:39'),
 (145, 442, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 00:11:18'),
-(148, 397, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-13 02:16:51'),
+(148, 397, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:16:51'),
 (149, 442, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:16:51'),
-(152, 452, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 0, '2025-10-13 02:24:18'),
+(152, 452, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-13 02:24:18'),
 (153, 450, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-13 02:24:18'),
 (154, 442, ' ROBERTO MOISES CANTOR CEJA ha solicitado unirse a tu equipo \'CACHETES HIJO DE PERRA \'', 'solicitud', 1, '2025-10-13 02:43:03'),
 (155, 442, 'ATZIRI CITLALI GUADALUPE HERNANDEZ GARCIA desea volver a unirse a tu equipo \'CACHETES HIJO DE PERRA \' después de haberse salido.', 'solicitud', 1, '2025-10-13 02:43:42'),
 (156, 451, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-13 02:43:54'),
 (157, 442, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:43:54'),
-(158, 447, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-13 02:43:55'),
+(158, 447, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:43:55'),
 (159, 442, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-13 02:43:55'),
-(160, 447, 'Claudia shembaum ha solicitado unirse a tu equipo \'CACHETES HIJO DE PERRA \'', 'solicitud', 0, '2025-10-13 02:58:15');
+(162, 397, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:50'),
+(163, 447, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:50'),
+(164, 442, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 0, '2025-10-15 23:40:51'),
+(165, 447, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:51'),
+(166, 452, ' DIEGO GUILLERMO GONZALEZ FRANCO ha solicitado unirse a tu equipo \'CACHETES HIJO DE PERRA original\'', 'solicitud', 1, '2025-10-16 00:04:41');
 
 -- --------------------------------------------------------
 
@@ -251,11 +255,12 @@ CREATE TABLE `solicitudes` (
 --
 
 INSERT INTO `solicitudes` (`solicitud_id`, `usuario_id`, `equipo_id`, `estado`, `fecha`) VALUES
-(66, 397, 91, 'aceptada', '2025-10-13 02:16:27'),
 (68, 452, 92, 'aceptada', '2025-10-13 02:23:33'),
 (69, 447, 91, 'aceptada', '2025-10-13 02:43:03'),
 (70, 451, 91, 'aceptada', '2025-10-13 02:43:42'),
-(71, 442, 91, 'pendiente', '2025-10-13 02:58:15');
+(71, 442, 91, 'aceptada', '2025-10-13 02:58:15'),
+(72, 397, 91, 'aceptada', '2025-10-15 23:35:11'),
+(73, 450, 92, 'pendiente', '2025-10-16 00:04:41');
 
 -- --------------------------------------------------------
 
@@ -405,7 +410,7 @@ ALTER TABLE `equipo_carreras`
 -- AUTO_INCREMENT for table `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=223;
 
 --
 -- AUTO_INCREMENT for table `integrantes_equipo`
@@ -417,13 +422,13 @@ ALTER TABLE `integrantes_equipo`
 -- AUTO_INCREMENT for table `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=161;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=167;
 
 --
 -- AUTO_INCREMENT for table `solicitudes`
 --
 ALTER TABLE `solicitudes`
-  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- AUTO_INCREMENT for table `solicitudes_equipo`
@@ -447,6 +452,16 @@ ALTER TABLE `usuarios`
 ALTER TABLE `equipos`
   ADD CONSTRAINT `equipos_ibfk_1` FOREIGN KEY (`creador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
+CREATE TABLE sugerencias (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_id INT,
+    puntos_clave TEXT,
+    opiniones TEXT,
+    mejoras TEXT,
+    estado ENUM('pendiente', 'revisado', 'implementado') DEFAULT 'pendiente',
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
+);
 --
 -- Constraints for table `equipo_carreras`
 --
