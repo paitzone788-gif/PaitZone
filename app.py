@@ -61,43 +61,9 @@ def admin_required(f):
 def index():
     usuario = session.get('usuario')
 
-    # Si no hay sesión, mostrar la página pública de inicio CON ESTADÍSTICAS REALES
+    # Si no hay sesión, mostrar la página pública de inicio
     if not usuario:
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        
-        # ✅ ESTADÍSTICAS REALES
-        cursor.execute('SELECT COUNT(*) as total FROM equipos')
-        proyectos_activos = cursor.fetchone()['total']
-        
-        cursor.execute('SELECT COUNT(*) as total FROM usuarios')
-        estudiantes_conectados = cursor.fetchone()['total']
-        
-        cursor.execute('''
-            SELECT COUNT(DISTINCT equipo_id) as total 
-            FROM equipo_integrantes 
-            WHERE equipo_id IN (SELECT id FROM equipos)
-        ''')
-        equipos_formados = cursor.fetchone()['total']
-        
-        # Calcular satisfacción (equipos completos vs equipos formados)
-        cursor.execute('''
-            SELECT COUNT(*) as completos 
-            FROM equipos e 
-            WHERE (SELECT COUNT(*) FROM equipo_integrantes ei WHERE ei.equipo_id = e.id) >= e.max_integrantes
-        ''')
-        equipos_completos = cursor.fetchone()['completos']
-        
-        satisfaccion = 0
-        if equipos_formados > 0:
-            satisfaccion = min(98, (equipos_completos / equipos_formados) * 100)
-        
-        cursor.close()
-        
-        return render_template("inicio.html", 
-                             proyectos_activos=proyectos_activos,
-                             estudiantes_conectados=estudiantes_conectados,
-                             equipos_formados=equipos_formados,
-                             satisfaccion=round(satisfaccion))
+        return render_template("inicio.html")
 
     # ✅ VERIFICAR SI EL USUARIO TIENE TURNO EN LA SESIÓN
     if 'turno' not in usuario:
@@ -182,39 +148,6 @@ def index():
         usuario=usuario,
         mi_proyecto=mi_proyecto
     )
-
-
-
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-
-    # Si el admin cambió el estado de alguna sugerencia
-    if request.method == 'POST':
-        sugerencia_id = request.form.get('sugerencia_id')
-        nuevo_estado = request.form.get('estado')
-        cursor.execute('UPDATE sugerencias SET estado = %s WHERE id = %s', (nuevo_estado, sugerencia_id))
-        mysql.connection.commit()
-        flash("Estado de la sugerencia actualizado.", "success")
-
-    # Mostrar todas las sugerencias con nombre del usuario
-    cursor.execute('''
-        SELECT s.*, u.nombre_completo 
-        FROM sugerencias s 
-        LEFT JOIN usuarios u ON s.usuario_id = u.id 
-        ORDER BY s.fecha DESC
-    ''')
-    sugerencias = cursor.fetchall()
-
-    # Marcar notificaciones de tipo 'sugerencia' como leídas
-    cursor.execute('''
-        UPDATE notificaciones 
-        SET leido = TRUE 
-        WHERE usuario_id = %s AND tipo = 'sugerencia'
-    ''', (session['usuario']['id'],))
-    mysql.connection.commit()
-    cursor.close()
-    
-    return render_template('admin_sugerencias.html', sugerencias=sugerencias)
-
 
 # ruta admin
 @app.route('/admin')
@@ -1418,7 +1351,7 @@ def notificaciones_actualizar():
     return jsonify({'success': True, 'message': f'Solicitud {nuevo_estado} correctamente'})
 
 
-    # Sugerencias
+
 
 
 
