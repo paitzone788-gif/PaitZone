@@ -9,7 +9,12 @@
     <link rel="stylesheet" href="/static/css/nav-bar.css">
     <link rel="stylesheet" href="/static/css/fondo.css">
 <link rel="stylesheet" href="/static/css/nav-bar.css">
+<style>
+  body {
 
+    padding-top: 70px; /* Espacio para la barra de navegación fija */
+  }
+</style>
 </head>
 <body>
 
@@ -24,7 +29,6 @@
     </div>
 </nav>
 
-<br><br><br><br><br><br><br><br>
 <!-- Mensajes flash -->
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -40,9 +44,7 @@
 {% endwith %}
 
 
-    <div class="alert ">
-      Nota: Si el administrador desea salir tendra que transferir la administración a otro integrante primero.
-    </div>
+
 
 <div class="container" style="padding-top:70px;">
   <h2 class="mb-4 text-center text-light">Mi Proyecto</h2>
@@ -97,7 +99,7 @@
                   <span class="badge bg-warning text-dark ms-1">Admin</span>
                 {% endif %}
                 <small class="d-block text-muted">
-                  {{ integrante.carrera }} | Grado: {{ integrante.grado }} | Grupo: {{ integrante.grupo }}
+                  <p style="color: aliceblue;">{{ integrante.carrera }} | Grado: {{ integrante.grado }} | Grupo: {{ integrante.grupo }}</p>
                 </small>
               </div>
               <a href="{{ url_for('perfil', id=integrante.id) }}" class="btn btn-sm btn-outline-light">Ver perfil</a>

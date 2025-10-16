@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 16, 2025 at 01:00 AM
+-- Generation Time: Oct 16, 2025 at 10:58 PM
 -- Server version: 8.0.43
 -- PHP Version: 7.4.9
 
@@ -69,7 +69,7 @@ CREATE TABLE `equipos` (
 
 INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `asesor`, `max_integrantes`, `creador_id`, `privacidad`, `privado`, `turno`) VALUES
 (91, 'CACHETES HIJO DE PERRA ', 'ajklsndaskjdbnajk', 'adanta claudia', 5, 447, 'privado', 1, 'Matutino'),
-(92, 'CACHETES HIJO DE PERRA original', 'asdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakj', 'claudia chochil', 5, 452, 'privado', 1, 'Vespertino');
+(92, 'CACHETES HIJO DE PERRA original', 'asdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakj', 'claudia chochil', 5, 453, 'privado', 1, 'Vespertino');
 
 -- --------------------------------------------------------
 
@@ -116,10 +116,9 @@ CREATE TABLE `equipo_integrantes` (
 --
 
 INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
-(221, 91, 397),
 (220, 91, 447),
 (219, 91, 451),
-(218, 92, 452);
+(223, 92, 453);
 
 -- --------------------------------------------------------
 
@@ -234,7 +233,10 @@ INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `tipo`, `leida`, `f
 (164, 442, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:51'),
 (165, 447, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:51'),
 (167, 450, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA original\' fue rechazada', 'respuesta', 0, '2025-10-16 00:36:52'),
-(168, 452, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-16 00:36:52');
+(168, 452, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-16 00:36:52'),
+(170, 453, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 0, '2025-10-16 22:40:06'),
+(171, 452, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-16 22:40:06'),
+(172, 453, ' ANTONY ALBERTO LOERA CARRILLO desea volver a unirse a tu equipo \'CACHETES HIJO DE PERRA original\' después de haberse salido.', 'solicitud', 0, '2025-10-16 22:41:41');
 
 -- --------------------------------------------------------
 
@@ -255,12 +257,13 @@ CREATE TABLE `solicitudes` (
 --
 
 INSERT INTO `solicitudes` (`solicitud_id`, `usuario_id`, `equipo_id`, `estado`, `fecha`) VALUES
-(68, 452, 92, 'aceptada', '2025-10-13 02:23:33'),
 (69, 447, 91, 'aceptada', '2025-10-13 02:43:03'),
 (70, 451, 91, 'aceptada', '2025-10-13 02:43:42'),
 (71, 442, 91, 'aceptada', '2025-10-13 02:58:15'),
 (72, 397, 91, 'aceptada', '2025-10-15 23:35:11'),
-(73, 450, 92, 'rechazada', '2025-10-16 00:04:41');
+(73, 450, 92, 'rechazada', '2025-10-16 00:04:41'),
+(74, 453, 92, 'aceptada', '2025-10-16 22:36:26'),
+(75, 452, 92, 'pendiente', '2025-10-16 22:41:41');
 
 -- --------------------------------------------------------
 
@@ -310,7 +313,8 @@ INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, 
 (449, ' ANGEL MARTIN CHAVEZ VENEGAS', 'Informática', '1234511', 'angel1001@alumnos.udg.mx', '9023091323121', 'pbkdf2:sha256:1000000$3qdmwo7Nk2nXqsf0$2a3a7fefdb08462cd07f6358a83ab8d94030ba02eae284d0c7fe4f442a122716', 'user', '6', 'A', NULL, 'Vespertino'),
 (450, ' DIEGO GUILLERMO GONZALEZ FRANCO', 'Informática', '1234011122', 'diego1001@alumnos.udg.mx', '1231231231212', 'pbkdf2:sha256:1000000$ehTZ9IH4FiH2KAuq$741c50b49d1408d3ee8eb36ff9afb978bc79b98042f8d5c5c5df62f30f32eecb', 'user', '6', 'A', NULL, 'Vespertino'),
 (451, 'ATZIRI CITLALI GUADALUPE HERNANDEZ GARCIA', 'Administración', '1234019191', 'atiziri1001@alumnos.udg.mx', '90237370011', 'pbkdf2:sha256:1000000$9Pc28qlHVaV0Iia4$7a5faef2b3cca7bc871022f08282cccc9318adb865a81be47578619adb909b73', 'user', '6', 'A', NULL, 'Matutino'),
-(452, ' ANTONY ALBERTO LOERA CARRILLO', 'Informática', '12340100112', 'antony1001@alumnos.udg.mx', '90237399112', 'pbkdf2:sha256:1000000$nP2hnBAuOzIRpmQ5$d7f4de43875c1d2250cd291dee30dad0cd5b9781192cd5a694a8698d23a170b9', 'user', '6', 'B', NULL, 'Vespertino');
+(452, ' ANTONY ALBERTO LOERA CARRILLO', 'Informática', '12340100112', 'antony1001@alumnos.udg.mx', '90237399112', 'pbkdf2:sha256:1000000$nP2hnBAuOzIRpmQ5$d7f4de43875c1d2250cd291dee30dad0cd5b9781192cd5a694a8698d23a170b9', 'user', '6', 'B', NULL, 'Vespertino'),
+(453, 'ALEJANDRA JOSSELIN AYALA VIZCAINO', 'Informática', '8281812112', 'alejandra1001@alumnos.udg.mx', '90230913001', 'pbkdf2:sha256:1000000$aNXY6pbdvXJk5v3H$4e60b52fb45a01e4a82f179d423da7897ab19cd3c8f4af2055123b0a84404698', 'user', '6', 'A', 'Puedo elaborar canvas', 'Vespertino');
 
 --
 -- Indexes for dumped tables
@@ -410,7 +414,7 @@ ALTER TABLE `equipo_carreras`
 -- AUTO_INCREMENT for table `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=223;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=224;
 
 --
 -- AUTO_INCREMENT for table `integrantes_equipo`
@@ -422,13 +426,13 @@ ALTER TABLE `integrantes_equipo`
 -- AUTO_INCREMENT for table `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=173;
 
 --
 -- AUTO_INCREMENT for table `solicitudes`
 --
 ALTER TABLE `solicitudes`
-  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT for table `solicitudes_equipo`
@@ -440,7 +444,7 @@ ALTER TABLE `solicitudes_equipo`
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=453;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=454;
 
 --
 -- Constraints for dumped tables
