@@ -1,29 +1,32 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mysqldb import MySQL
 import MySQLdb
 import MySQLdb.cursors
 from functools import wraps
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import g
 from MySQLdb.cursors import DictCursor
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from flask import jsonify
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
 
 # Configuración MySQL directa para tus queries actuales
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'mysql'
-app.config['MYSQL_DB'] = 'Entrelaza'
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'localhost')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'root')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', 'mysql')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'Entrelaza')
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
 # Configuración SQLAlchemy para el modelo Notificacion
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql@localhost/Entrelaza'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -1219,9 +1222,7 @@ def notificaciones_data():
             })
 
     else:
-        # ==== USUARIO NORMAL: mostrar sus propias solicitudes y notificaciones ====
         
-        # 1. Primero traer las SOLICITUDES del usuario
         cursor.execute("""
             SELECT
                 s.solicitud_id,
@@ -1262,7 +1263,6 @@ def notificaciones_data():
                 'creador_id': None
             })
 
-        # 2. Luego traer las NOTIFICACIONES normales del usuario
         cursor.execute("""
             SELECT 
                 n.id,
@@ -1279,11 +1279,9 @@ def notificaciones_data():
         
         notifs_normales = cursor.fetchall()
         for notif in notifs_normales:
-            # Evitar duplicados con las solicitudes que ya mostramos
             if not any(n.get('solicitud_id') for n in notificaciones if n.get('mensaje') == notif['mensaje']):
                 notificaciones.append(notif)
 
-    # Ordenar todas las notificaciones por fecha
     notificaciones.sort(key=lambda x: x['fecha'], reverse=True)
     
     cursor.close()
@@ -1293,7 +1291,6 @@ def notificaciones_data():
 
 
 
-# ---------- ACTUALIZAR ESTADO DE SOLICITUD ----------
 @app.route('/notificaciones/actualizar', methods=['POST'])
 def notificaciones_actualizar():
     data = request.get_json()
@@ -1305,7 +1302,6 @@ def notificaciones_actualizar():
 
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # Buscar la solicitud y su equipo
     cursor.execute("""
         SELECT s.*, e.nombre_proyecto, e.creador_id, e.capacidad
         FROM solicitudes s
@@ -1318,7 +1314,6 @@ def notificaciones_actualizar():
         cursor.close()
         return jsonify({'success': False, 'message': 'Solicitud no encontrada'}), 404
 
-    # ⚠️ Verificar si el equipo ya está lleno antes de aceptar
     if nuevo_estado == "aceptada":
         cursor.execute("""
             SELECT COUNT(*) AS miembros_actuales
@@ -1327,16 +1322,13 @@ def notificaciones_actualizar():
         """, (solicitud['equipo_id'],))
         miembros_actuales = cursor.fetchone()['miembros_actuales']
 
-        # Si el equipo ya tiene su capacidad completa
         if miembros_actuales >= solicitud['capacidad']:
             cursor.close()
             return jsonify({'success': False, 'message': 'El equipo ya está completo'}), 400
 
-    # Actualizar el estado de la solicitud
     cursor.execute("UPDATE solicitudes SET estado = %s WHERE solicitud_id = %s", (nuevo_estado, solicitud_id))
     mysql.connection.commit()
 
-    # Crear notificación para el solicitante
     estado_texto = "aceptada ✅" if nuevo_estado == "aceptada" else "rechazada ❌"
     mensaje = f"Tu solicitud para unirte al equipo '{solicitud['nombre_proyecto']}' fue {estado_texto}."
 
@@ -1356,14 +1348,12 @@ def notificaciones_actualizar():
 
 
 
-# ---------- INYECTAR CONTADOR DE NOTIFICACIONES ----------
 @app.context_processor
 def inject_notificaciones():
     if 'usuario' in session:
         usuario_id = session['usuario']['id']
         cursor = mysql.connection.cursor()
         
-        # ✅ CONTAR: Notificaciones NO LEÍDAS + Solicitudes pendientes del usuario
         cursor.execute('''
             SELECT COUNT(*) AS total 
             FROM notificaciones 
@@ -1371,7 +1361,6 @@ def inject_notificaciones():
         ''', (usuario_id,))
         notificaciones_no_leidas = cursor.fetchone()['total']
         
-        # ✅ CONTAR: Solicitudes pendientes del usuario (para mostrar en el contador)
         cursor.execute('''
             SELECT COUNT(*) AS total 
             FROM solicitudes 
@@ -1379,7 +1368,6 @@ def inject_notificaciones():
         ''', (usuario_id,))
         solicitudes_pendientes = cursor.fetchone()['total']
         
-        # ✅ TOTAL: Notificaciones + Solicitudes pendientes
         total_pendientes = notificaciones_no_leidas + solicitudes_pendientes
         
         cursor.close()
