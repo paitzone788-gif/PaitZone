@@ -5,14 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mi proyecto</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/css/botones.css">
-    <link rel="stylesheet" href="/static/css/nav-bar.css">
-    <link rel="stylesheet" href="/static/css/fondo.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/botones.css">
 <link rel="stylesheet" href="/static/css/nav-bar.css">
+<link rel="stylesheet" href="/static/css/fondo.css">
 <style>
   body {
-
-    padding-top: 70px; /* Espacio para la barra de navegación fija */
+    padding-top: 70px;
   }
 </style>
 </head>
@@ -21,7 +20,6 @@
 <nav class="navbar navbar-expand-lg custom-navbar fixed-top">
     <div class="container">
         <a class="navbar-brand logo-big mx-auto" href="/">PaitZone</a>
-
         <div class="ms-auto d-flex align-items-center">
             <span class="username me-3">Hola, {{ usuario['nombre_completo'] }}</span>
             <a href="{{ url_for('index') }}" class="btn btn-cafe">🏠 Volver al inicio</a>
@@ -42,9 +40,6 @@
     </div>
   {% endif %}
 {% endwith %}
-
-
-
 
 <div class="container" style="padding-top:70px;">
   <h2 class="mb-4 text-center text-light">Mi Proyecto</h2>
@@ -72,8 +67,16 @@
       <!-- Asesor -->
       <div class="mb-3">
         <strong>Asesor:</strong> {{ equipo.asesor or "No asignado" }}
+        
       </div>
 
+      <div class="mb-3">
+    <strong>Turno del equipo:</strong><p>Matutino (amarillo) vs Vespertino (azul)</p>  
+    <span class="badge {% if equipo.turno == 'Matutino' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+      
+      {{ equipo.turno }}
+    </span>
+</div>
       <!-- Carreras necesarias -->
       <div class="mb-3">
         <strong>Carreras necesarias:</strong><br>
@@ -110,17 +113,34 @@
         </ul>
       </div>
 
-      <!-- Botones -->
+      <!-- Botones principales -->
       <div class="d-flex flex-wrap gap-2 mt-4">
-<button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#confirmarSalidaModal">
-    Salir del equipo
-</button>
+        <button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#confirmarSalidaModal">
+            Salir del equipo
+        </button>
 
         <button type="button" class="btn btn-primary flex-grow-1"
                 data-bs-toggle="modal" data-bs-target="#integrantesModal">
           Enviar mensaje a los integrantes
         </button>
       </div>
+
+      <!-- ✅ SECCIÓN DE DISOLVER EQUIPO (POSICIÓN CORRECTA - FUERA DEL MODAL) -->
+      {% if equipo.creador_id == usuario.id and equipo.integrantes | length == 1 %}
+      <div class="mt-4 p-3 border border-danger rounded bg-dark">
+          <div class="alert alert-warning mb-3">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Eres el único integrante del equipo</strong>
+              <p class="mb-0 mt-1">Si ya no deseas mantener este equipo, puedes disolverlo completamente.</p>
+          </div>
+          
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#disolverEquipoModal">
+              <i class="fas fa-trash me-1"></i>
+              Disolver Equipo
+          </button>
+      </div>
+      {% endif %}
+
     </div>
   </div>
   {% else %}
@@ -128,12 +148,7 @@
   {% endif %}
 </div>
 
-
-
-
-
-
-<!-- Modal -->
+<!-- Modal de Integrantes (SIN la sección de disolver equipo dentro) -->
 <div class="modal fade" id="integrantesModal" tabindex="-1" aria-labelledby="integrantesModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bg-dark text-light border-0 shadow">
@@ -171,6 +186,90 @@
   </div>
 </div>
 
+<!-- Modal para Disolver Equipo -->
+<div class="modal fade" id="disolverEquipoModal" tabindex="-1" aria-labelledby="disolverEquipoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                <h5 class="modal-title" id="disolverEquipoModalLabel" style="color: white;">
+                    <i class="fas fa-radiation me-2"></i>Confirmar Disolución del Equipo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger text-center">
+                    <i class="fas fa-skull-crossbones fa-2x mb-2"></i>
+                    <h6 class="mb-2">¡ADVERTENCIA! Esta acción no se puede deshacer</h6>
+                </div>
+                
+                <p><strong>Estás a punto de disolver el equipo:</strong></p>
+                <h5 class="text-warning text-center mb-3">"{{ equipo.nombre_proyecto }}"</h5>
+                
+                <p>Esta acción eliminará permanentemente:</p>
+                <ul class="mb-3">
+                    <li>El equipo completo y toda su información</li>
+                    <li>El historial del proyecto</li>
+                    <li>Todas las solicitudes pendientes</li>
+                    <li>Los datos de colaboración</li>
+                </ul>
+                
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDisolver">
+                    <label class="form-check-label" for="confirmDisolver">
+                        <strong>Entiendo que esta acción es permanente y no se puede deshacer</strong>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.2);">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <form action="{{ url_for('dissolve_team', equipo_id=equipo.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" id="confirmDisolverBtn" disabled>
+                        <i class="fas fa-trash me-1"></i>
+                        Sí, Disolver Equipo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// Habilitar/deshabilitar botón de disolver equipo
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirmDisolver');
+    const confirmBtn = document.getElementById('confirmDisolverBtn');
+    
+    if (confirmCheckbox && confirmBtn) {
+        confirmCheckbox.addEventListener('change', function() {
+            confirmBtn.disabled = !this.checked;
+        });
+    }
+    
+    // Manejar el envío del formulario de disolución
+    const dissolveForm = document.querySelector('form[action*="dissolve_team"]');
+    if (dissolveForm) {
+        dissolveForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!confirm('¿Estás completamente seguro de que quieres disolver este equipo? Esta acción es irreversible.')) {
+                return;
+            }
+            
+            // Mostrar loading
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Disolviendo...';
+            submitBtn.disabled = true;
+            
+            // Enviar formulario
+            this.submit();
+        });
+    }
+});
+</script>
 
 <!-- Modal de confirmación de salida -->
 <div class="modal fade" id="confirmarSalidaModal" tabindex="-1" aria-labelledby="confirmarSalidaModalLabel" aria-hidden="true">
@@ -235,27 +334,66 @@
                   <strong style="color: white;">{{ integrante.nombre_completo }}</strong><br>
                   <small style="color: rgba(255,255,255,0.7);">{{ integrante.carrera }} - {{ integrante.grado }}°{{ integrante.grupo }}</small>
                 </div>
-<button type="button" class="btn btn-warning btn-sm btn-transferir" 
-        data-usuario-id="{{ integrante.id }}" 
-        data-usuario-nombre="{{ integrante.nombre_completo }}"
-        onclick="prepararTransferencia('{{ integrante.id }}', '{{ integrante.nombre_completo }}')"
-        style="background: #ffc107; border: none; color: #000; font-weight: 500;">
-  <i class="fas fa-exchange-alt me-1"></i>Transferir
-</button>
+                <button type="button" class="btn btn-warning btn-sm btn-transferir" 
+                        data-usuario-id="{{ integrante.id }}" 
+                        data-usuario-nombre="{{ integrante.nombre_completo }}"
+                        style="background: #ffc107; border: none; color: #000; font-weight: 500;">
+                  <i class="fas fa-exchange-alt me-1"></i>Transferir
+                </button>
               </div>
             {% endif %}
           {% endfor %}
         </div>
       </div>
       <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.2);">
-<button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
-    <i class="fas fa-times me-1"></i>Cancelar
-</button>
+        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Cancelar
+        </button>
       </div>
     </div>
   </div>
 </div>
-<!-- Script para transferencia de administración  -->
+
+<!-- Modal de confirmación para transferir -->
+<div class="modal fade" id="confirmarTransferenciaModal" tabindex="-1" aria-labelledby="confirmarTransferenciaModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none;">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+        <h5 class="modal-title" id="confirmarTransferenciaModalLabel" style="color: white;">
+          <i class="fas fa-shield-alt me-2"></i>Confirmar transferencia
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3">
+          <i class="fas fa-exchange-alt fa-3x text-warning mb-3"></i>
+          <h6 style="color: white;">¿Estás seguro de transferir la administración?</h6>
+        </div>
+        
+        <div class="alert alert-warning" style="background: rgba(255,193,7,0.2); border: 1px solid rgba(255,193,7,0.5); color: #ffc107;">
+          <strong><i class="fas fa-info-circle me-1"></i>Importante:</strong><br>
+          • Ya no serás administrador del equipo<br>
+          • No podrás aceptar/rechazar solicitudes<br>
+          • El nuevo administrador tendrá control total
+        </div>
+        
+        <div class="text-center mt-3">
+          <strong id="usuarioTransferirNombre" style="color: #ffc107;"></strong>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.2);">
+        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Cancelar
+        </button>
+        <button type="button" class="btn btn-warning" id="confirmarTransferenciaBtn">
+          <i class="fas fa-check me-1"></i>Sí, transferir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script para transferencia de administración -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let usuarioTransferirId = null;
@@ -394,242 +532,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Script para manejar el backdrop de las modales -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Manejar el cierre correcto de todas las modales
-    const modales = [
-        'confirmarSalidaModal', 
-        'transferirAdminModal', 
-        'confirmarTransferenciaModal'
-    ];
-    
-    modales.forEach(modalId => {
-        const modalElement = document.getElementById(modalId);
-        if (modalElement) {
-            modalElement.addEventListener('hidden.bs.modal', function() {
-                // Forzar la eliminación del backdrop si existe
-                const backdrops = document.querySelectorAll('.modal-backdrop');
-                backdrops.forEach(backdrop => {
-                    backdrop.remove();
-                });
-                // Remover la clase del body
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = '';
-            });
-        }
-    });
-    
-    // También manejar el cierre con el botón cancelar específicamente
-    document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            setTimeout(() => {
-                limpiarBackdrop();
-            }, 150);
-        });
-    });
-    
-    // Función para limpiar backdrop
-    function limpiarBackdrop() {
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => {
-            backdrop.remove();
-        });
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-    }
-    
-    // También limpiar cuando se hace transferencia exitosa
-    window.limpiarModales = function() {
-        const modales = [
-            'confirmarSalidaModal', 
-            'transferirAdminModal', 
-            'confirmarTransferenciaModal'
-        ];
-        
-        modales.forEach(modalId => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
-            if (modal) {
-                modal.hide();
-            }
-        });
-        
-        setTimeout(limpiarBackdrop, 200);
-    };
-});
-</script>
-
- <!-- modal para confirmar transferencia de administración -->
-<!-- Modal de confirmación para transferir -->
-<div class="modal fade" id="confirmarTransferenciaModal" tabindex="-1" aria-labelledby="confirmarTransferenciaModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none;">
-      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-        <h5 class="modal-title" id="confirmarTransferenciaModalLabel" style="color: white;">
-          <i class="fas fa-shield-alt me-2"></i>Confirmar transferencia
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <div class="text-center mb-3">
-          <i class="fas fa-exchange-alt fa-3x text-warning mb-3"></i>
-          <h6 style="color: white;">¿Estás seguro de transferir la administración?</h6>
-        </div>
-        
-        <div class="alert alert-warning" style="background: rgba(255,193,7,0.2); border: 1px solid rgba(255,193,7,0.5); color: #ffc107;">
-          <strong><i class="fas fa-info-circle me-1"></i>Importante:</strong><br>
-          • Ya no serás administrador del equipo<br>
-          • No podrás aceptar/rechazar solicitudes<br>
-          • El nuevo administrador tendrá control total
-        </div>
-        
-        <div class="text-center mt-3">
-          <strong id="usuarioTransferirNombre" style="color: #ffc107;"></strong>
-        </div>
-      </div>
-      <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.2);">
-        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
-          <i class="fas fa-times me-1"></i>Cancelar
-        </button>
-        <button type="button" class="btn btn-warning" id="confirmarTransferenciaBtn">
-          <i class="fas fa-check me-1"></i>Sí, transferir
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Script para transferencia de administración COMPLETO -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let usuarioTransferirId = null;
-    let usuarioTransferirNombre = null;
-    let equipoId = {{ equipo.id }};
-    
-    // Manejar clic en botones de transferir
-    const transferirBtns = document.querySelectorAll('.btn-transferir');
-    
-    transferirBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            usuarioTransferirId = this.dataset.usuarioId;
-            usuarioTransferirNombre = this.dataset.usuarioNombre;
-            
-            // Mostrar nombre del usuario en la modal de confirmación
-            document.getElementById('usuarioTransferirNombre').textContent = usuarioTransferirNombre;
-            
-            // Mostrar modal de confirmación
-            const confirmModal = new bootstrap.Modal(document.getElementById('confirmarTransferenciaModal'));
-            confirmModal.show();
-        });
-    });
-    
-    // Manejar confirmación de transferencia
-    document.getElementById('confirmarTransferenciaBtn').addEventListener('click', async function() {
-        if (!usuarioTransferirId) return;
-        
-        // Mostrar loading en el botón
-        const confirmBtn = this;
-        const originalText = confirmBtn.innerHTML;
-        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Transferiendo...';
-        confirmBtn.disabled = true;
-        
-        try {
-            const response = await fetch(`/transferir_admin/${equipoId}/${usuarioTransferirId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // ✅ Éxito - mostrar mensaje de éxito
-                showSuccessToast('✅ Administración transferida correctamente a ' + usuarioTransferirNombre);
-                
-                // Cerrar todas las modales después de un delay
-                setTimeout(() => {
-                    const confirmTransferModal = bootstrap.Modal.getInstance(document.getElementById('confirmarTransferenciaModal'));
-                    const transferModal = bootstrap.Modal.getInstance(document.getElementById('transferirAdminModal'));
-                    const salidaModal = bootstrap.Modal.getInstance(document.getElementById('confirmarSalidaModal'));
-                    
-                    if (confirmTransferModal) confirmTransferModal.hide();
-                    if (transferModal) transferModal.hide();
-                    if (salidaModal) salidaModal.hide();
-                    
-                    // Recargar la página para reflejar los cambios
-                    location.reload();
-                }, 2000);
-                
-            } else {
-                // ❌ Error
-                showErrorToast('❌ ' + (data.message || 'Error al transferir la administración'));
-                confirmBtn.innerHTML = originalText;
-                confirmBtn.disabled = false;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showErrorToast('❌ Error de conexión al transferir la administración');
-            confirmBtn.innerHTML = originalText;
-            confirmBtn.disabled = false;
-        }
-    });
-    
-    // Función para mostrar toast de éxito
-    function showSuccessToast(message) {
-        showToast(message, 'success');
-    }
-    
-    // Función para mostrar toast de error
-    function showErrorToast(message) {
-        showToast(message, 'danger');
-    }
-    
-    // Función general para mostrar toasts
-    function showToast(message, type) {
-        const colores = {
-            success: 'text-bg-success',
-            danger: 'text-bg-danger',
-            warning: 'text-bg-warning',
-            info: 'text-bg-info'
-        };
-        
-        // Crear toast container si no existe
-        let toastContainer = document.getElementById('toast-container-transfer');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.id = 'toast-container-transfer';
-            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-            toastContainer.style.zIndex = '9999';
-            document.body.appendChild(toastContainer);
-        }
-        
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center ${colores[type] || 'text-bg-info'} border-0`;
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        toastContainer.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
-        bsToast.show();
-        
-        toast.addEventListener('hidden.bs.toast', () => {
-            toast.remove();
-        });
-    }
-});
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/js/animacion de nav-bar.js"></script>
-<!-- Contenedor de toasts flotantes -->
-
 
 <script>
   // Desaparecer alert automáticamente después de 4 segundos

@@ -1352,7 +1352,54 @@ def notificaciones_actualizar():
 
 
 
-
+@app.route('/dissolve_team/<int:equipo_id>', methods=['POST'])
+def dissolve_team(equipo_id):
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+    
+    try:
+        cursor = mysql.connection.cursor()
+        
+        # Verificar que el equipo existe y el usuario es el administrador
+        cursor.execute('''
+            SELECT e.id, e.creador_id, COUNT(ei.usuario_id) as num_integrantes
+            FROM equipos e 
+            LEFT JOIN equipo_integrantes ei ON e.id = ei.equipo_id
+            WHERE e.id = %s
+            GROUP BY e.id, e.creador_id
+        ''', (equipo_id,))
+        
+        equipo = cursor.fetchone()
+        
+        if not equipo:
+            flash("El equipo no existe", "danger")
+            return redirect(url_for('mi_equipo'))
+        
+        # Verificar que el usuario es el administrador
+        if equipo['creador_id'] != session['usuario']['id']:
+            flash("No tienes permisos para disolver este equipo", "danger")
+            return redirect(url_for('mi_equipo'))
+        
+        # Verificar que es el único integrante
+        if equipo['num_integrantes'] != 1:
+            flash("Solo puedes disolver el equipo si eres el único integrante", "warning")
+            return redirect(url_for('mi_equipo'))
+        
+        # Eliminar el equipo (esto eliminará en cascada las relaciones por las claves foráneas)
+        cursor.execute('DELETE FROM equipos WHERE id = %s', (equipo_id,))
+        mysql.connection.commit()
+        cursor.close()
+        
+        flash("✅ Equipo disuelto exitosamente", "success")
+        return redirect(url_for('index'))
+        
+    except Exception as e:
+        mysql.connection.rollback()
+        cursor.close()
+        print(f"Error al disolver equipo: {e}")
+        flash("❌ Error al disolver el equipo", "danger")
+        return redirect(url_for('mi_equipo'))
 
 
 
