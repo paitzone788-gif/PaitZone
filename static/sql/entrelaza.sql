@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Oct 16, 2025 at 10:58 PM
--- Server version: 8.0.43
--- PHP Version: 7.4.9
+-- Servidor: localhost
+-- Tiempo de generación: 26-10-2025 a las 00:55:54
+-- Versión del servidor: 8.0.43
+-- Versión de PHP: 7.4.9
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `entrelaza`
+-- Base de datos: `entrelaza`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `carreras`
+-- Estructura de tabla para la tabla `carreras`
 --
 
 CREATE TABLE `carreras` (
@@ -33,7 +33,7 @@ CREATE TABLE `carreras` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `carreras`
+-- Volcado de datos para la tabla `carreras`
 --
 
 INSERT INTO `carreras` (`id`, `nombre`) VALUES
@@ -48,7 +48,7 @@ INSERT INTO `carreras` (`id`, `nombre`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `equipos`
+-- Estructura de tabla para la tabla `equipos`
 --
 
 CREATE TABLE `equipos` (
@@ -64,17 +64,17 @@ CREATE TABLE `equipos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `equipos`
+-- Volcado de datos para la tabla `equipos`
 --
 
 INSERT INTO `equipos` (`id`, `nombre_proyecto`, `descripcion`, `asesor`, `max_integrantes`, `creador_id`, `privacidad`, `privado`, `turno`) VALUES
 (91, 'CACHETES HIJO DE PERRA ', 'ajklsndaskjdbnajk', 'adanta claudia', 5, 447, 'privado', 1, 'Matutino'),
-(92, 'CACHETES HIJO DE PERRA original', 'asdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakjasdnaskljdbaskhjldbaslhjkbdashjdbasbdasjbdasjbdasjbdasbdaksbdakj', 'claudia chochil', 5, 453, 'privado', 1, 'Vespertino');
+(93, 'Tilin', 'maquinaria', 'Juanito', 5, 450, 'privado', 1, 'Vespertino');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `equipo_carreras`
+-- Estructura de tabla para la tabla `equipo_carreras`
 --
 
 CREATE TABLE `equipo_carreras` (
@@ -85,7 +85,7 @@ CREATE TABLE `equipo_carreras` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `equipo_carreras`
+-- Volcado de datos para la tabla `equipo_carreras`
 --
 
 INSERT INTO `equipo_carreras` (`id`, `equipo_id`, `carrera_id`, `cantidad`) VALUES
@@ -93,16 +93,15 @@ INSERT INTO `equipo_carreras` (`id`, `equipo_id`, `carrera_id`, `cantidad`) VALU
 (183, 91, 4, 0),
 (184, 91, 2, 0),
 (185, 91, 6, 0),
-(186, 92, 1, 1),
-(187, 92, 4, 1),
-(188, 92, 2, 1),
-(189, 92, 6, 1),
-(190, 92, 5, 1);
+(191, 93, 3, 2),
+(192, 93, 6, 1),
+(193, 93, 7, 1),
+(194, 93, 5, 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `equipo_integrantes`
+-- Estructura de tabla para la tabla `equipo_integrantes`
 --
 
 CREATE TABLE `equipo_integrantes` (
@@ -112,18 +111,19 @@ CREATE TABLE `equipo_integrantes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `equipo_integrantes`
+-- Volcado de datos para la tabla `equipo_integrantes`
 --
 
 INSERT INTO `equipo_integrantes` (`id`, `equipo_id`, `usuario_id`) VALUES
 (220, 91, 447),
 (219, 91, 451),
-(223, 92, 453);
+(227, 93, 450),
+(226, 93, 453);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `integrantes_equipo`
+-- Estructura de tabla para la tabla `integrantes_equipo`
 --
 
 CREATE TABLE `integrantes_equipo` (
@@ -135,7 +135,7 @@ CREATE TABLE `integrantes_equipo` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `notificaciones`
+-- Estructura de tabla para la tabla `notificaciones`
 --
 
 CREATE TABLE `notificaciones` (
@@ -148,7 +148,7 @@ CREATE TABLE `notificaciones` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `notificaciones`
+-- Volcado de datos para la tabla `notificaciones`
 --
 
 INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `tipo`, `leida`, `fecha`) VALUES
@@ -232,16 +232,22 @@ INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `tipo`, `leida`, `f
 (163, 447, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:50'),
 (164, 442, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:51'),
 (165, 447, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA \'', 'respuesta', 1, '2025-10-15 23:40:51'),
-(167, 450, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA original\' fue rechazada', 'respuesta', 0, '2025-10-16 00:36:52'),
+(167, 450, 'Tu solicitud para unirte al equipo \'CACHETES HIJO DE PERRA original\' fue rechazada', 'respuesta', 1, '2025-10-16 00:36:52'),
 (168, 452, 'Rechazaste una solicitud para tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-16 00:36:52'),
-(170, 453, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 0, '2025-10-16 22:40:06'),
+(170, 453, '¡Felicidades! Fuiste aceptado en el equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-16 22:40:06'),
 (171, 452, 'Aceptaste a un usuario en tu equipo \'CACHETES HIJO DE PERRA original\'', 'respuesta', 1, '2025-10-16 22:40:06'),
-(172, 453, ' ANTONY ALBERTO LOERA CARRILLO desea volver a unirse a tu equipo \'CACHETES HIJO DE PERRA original\' después de haberse salido.', 'solicitud', 0, '2025-10-16 22:41:41');
+(172, 453, ' ANTONY ALBERTO LOERA CARRILLO desea volver a unirse a tu equipo \'CACHETES HIJO DE PERRA original\' después de haberse salido.', 'solicitud', 1, '2025-10-16 22:41:41'),
+(174, 453, '¡Felicidades! Fuiste aceptado en el equipo \'Tilin\'', 'respuesta', 1, '2025-10-26 00:17:15'),
+(175, 450, 'Aceptaste a un usuario en tu equipo \'Tilin\'', 'respuesta', 1, '2025-10-26 00:17:15'),
+(177, 453, '¡Felicidades! Fuiste aceptado en el equipo \'Tilin\'', 'respuesta', 1, '2025-10-26 00:19:11'),
+(178, 450, 'Aceptaste a un usuario en tu equipo \'Tilin\'', 'respuesta', 1, '2025-10-26 00:19:11'),
+(180, 450, '¡Felicidades! Fuiste aceptado en el equipo \'Tilin\'', 'respuesta', 1, '2025-10-26 00:20:41'),
+(181, 453, 'Aceptaste a un usuario en tu equipo \'Tilin\'', 'respuesta', 1, '2025-10-26 00:20:41');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `solicitudes`
+-- Estructura de tabla para la tabla `solicitudes`
 --
 
 CREATE TABLE `solicitudes` (
@@ -253,7 +259,7 @@ CREATE TABLE `solicitudes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `solicitudes`
+-- Volcado de datos para la tabla `solicitudes`
 --
 
 INSERT INTO `solicitudes` (`solicitud_id`, `usuario_id`, `equipo_id`, `estado`, `fecha`) VALUES
@@ -261,14 +267,13 @@ INSERT INTO `solicitudes` (`solicitud_id`, `usuario_id`, `equipo_id`, `estado`, 
 (70, 451, 91, 'aceptada', '2025-10-13 02:43:42'),
 (71, 442, 91, 'aceptada', '2025-10-13 02:58:15'),
 (72, 397, 91, 'aceptada', '2025-10-15 23:35:11'),
-(73, 450, 92, 'rechazada', '2025-10-16 00:04:41'),
-(74, 453, 92, 'aceptada', '2025-10-16 22:36:26'),
-(75, 452, 92, 'pendiente', '2025-10-16 22:41:41');
+(77, 453, 93, 'aceptada', '2025-10-26 00:18:26'),
+(78, 450, 93, 'aceptada', '2025-10-26 00:20:23');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `solicitudes_equipo`
+-- Estructura de tabla para la tabla `solicitudes_equipo`
 --
 
 CREATE TABLE `solicitudes_equipo` (
@@ -282,7 +287,7 @@ CREATE TABLE `solicitudes_equipo` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `usuarios`
+-- Estructura de tabla para la tabla `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -301,7 +306,7 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `usuarios`
+-- Volcado de datos para la tabla `usuarios`
 --
 
 INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, `telefono`, `contrasena`, `role`, `grado`, `grupo`, `descripcion`, `turno`) VALUES
@@ -311,31 +316,31 @@ INSERT INTO `usuarios` (`id`, `nombre_completo`, `carrera`, `codigo`, `correo`, 
 (447, ' ROBERTO MOISES CANTOR CEJA', 'Informática', '123401231', 'roberto1001@alumnos.udg.mx', '9290209021', 'pbkdf2:sha256:1000000$9U3REOjnsaPU7Ohw$7fe13ec2853936e06283bfe89c332b2a8e6e05928f7adf189de5a949f790592d', 'user', '6', 'A', 'QUE ROLLO PHONK CACHETES HIJO DE PERRA\r\nSEAN SERIO SIERVOS', 'Matutino'),
 (448, 'ALEJANDRA JOSSELIN AYALA VIZCAINO', 'Informática', '1231312344', 'alejandra022@alumnos.udg.mx', '902309139101', 'pbkdf2:sha256:1000000$4Sckm2iUTULgf0pN$041bb2a1835918fd74c5b9962444e8e63242b7014062fb6deb7236a2030a4740', 'user', '6', 'A', NULL, 'Vespertino'),
 (449, ' ANGEL MARTIN CHAVEZ VENEGAS', 'Informática', '1234511', 'angel1001@alumnos.udg.mx', '9023091323121', 'pbkdf2:sha256:1000000$3qdmwo7Nk2nXqsf0$2a3a7fefdb08462cd07f6358a83ab8d94030ba02eae284d0c7fe4f442a122716', 'user', '6', 'A', NULL, 'Vespertino'),
-(450, ' DIEGO GUILLERMO GONZALEZ FRANCO', 'Informática', '1234011122', 'diego1001@alumnos.udg.mx', '1231231231212', 'pbkdf2:sha256:1000000$ehTZ9IH4FiH2KAuq$741c50b49d1408d3ee8eb36ff9afb978bc79b98042f8d5c5c5df62f30f32eecb', 'user', '6', 'A', NULL, 'Vespertino'),
+(450, ' DIEGO GUILLERMO GONZALEZ FRANCO', 'Informática', '1234011122', 'diego1001@alumnos.udg.mx', '1231231231212', 'pbkdf2:sha256:1000000$ehTZ9IH4FiH2KAuq$741c50b49d1408d3ee8eb36ff9afb978bc79b98042f8d5c5c5df62f30f32eecb', 'user', '6', 'A', 'Hola', 'Vespertino'),
 (451, 'ATZIRI CITLALI GUADALUPE HERNANDEZ GARCIA', 'Administración', '1234019191', 'atiziri1001@alumnos.udg.mx', '90237370011', 'pbkdf2:sha256:1000000$9Pc28qlHVaV0Iia4$7a5faef2b3cca7bc871022f08282cccc9318adb865a81be47578619adb909b73', 'user', '6', 'A', NULL, 'Matutino'),
 (452, ' ANTONY ALBERTO LOERA CARRILLO', 'Informática', '12340100112', 'antony1001@alumnos.udg.mx', '90237399112', 'pbkdf2:sha256:1000000$nP2hnBAuOzIRpmQ5$d7f4de43875c1d2250cd291dee30dad0cd5b9781192cd5a694a8698d23a170b9', 'user', '6', 'B', NULL, 'Vespertino'),
 (453, 'ALEJANDRA JOSSELIN AYALA VIZCAINO', 'Informática', '8281812112', 'alejandra1001@alumnos.udg.mx', '90230913001', 'pbkdf2:sha256:1000000$aNXY6pbdvXJk5v3H$4e60b52fb45a01e4a82f179d423da7897ab19cd3c8f4af2055123b0a84404698', 'user', '6', 'A', 'Puedo elaborar canvas', 'Vespertino');
 
 --
--- Indexes for dumped tables
+-- Índices para tablas volcadas
 --
 
 --
--- Indexes for table `carreras`
+-- Indices de la tabla `carreras`
 --
 ALTER TABLE `carreras`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nombre` (`nombre`);
 
 --
--- Indexes for table `equipos`
+-- Indices de la tabla `equipos`
 --
 ALTER TABLE `equipos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `creador_id` (`creador_id`);
 
 --
--- Indexes for table `equipo_carreras`
+-- Indices de la tabla `equipo_carreras`
 --
 ALTER TABLE `equipo_carreras`
   ADD PRIMARY KEY (`id`),
@@ -343,7 +348,7 @@ ALTER TABLE `equipo_carreras`
   ADD KEY `carrera_id` (`carrera_id`);
 
 --
--- Indexes for table `equipo_integrantes`
+-- Indices de la tabla `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
   ADD PRIMARY KEY (`id`),
@@ -351,21 +356,21 @@ ALTER TABLE `equipo_integrantes`
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Indexes for table `integrantes_equipo`
+-- Indices de la tabla `integrantes_equipo`
 --
 ALTER TABLE `integrantes_equipo`
   ADD PRIMARY KEY (`id`),
   ADD KEY `equipo_id` (`equipo_id`);
 
 --
--- Indexes for table `notificaciones`
+-- Indices de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
   ADD PRIMARY KEY (`id`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
--- Indexes for table `solicitudes`
+-- Indices de la tabla `solicitudes`
 --
 ALTER TABLE `solicitudes`
   ADD PRIMARY KEY (`solicitud_id`),
@@ -373,7 +378,7 @@ ALTER TABLE `solicitudes`
   ADD KEY `equipo_id` (`equipo_id`);
 
 --
--- Indexes for table `solicitudes_equipo`
+-- Indices de la tabla `solicitudes_equipo`
 --
 ALTER TABLE `solicitudes_equipo`
   ADD PRIMARY KEY (`id`),
@@ -381,7 +386,7 @@ ALTER TABLE `solicitudes_equipo`
   ADD KEY `equipo_id` (`equipo_id`);
 
 --
--- Indexes for table `usuarios`
+-- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
@@ -389,108 +394,108 @@ ALTER TABLE `usuarios`
   ADD UNIQUE KEY `correo` (`correo`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT de las tablas volcadas
 --
 
 --
--- AUTO_INCREMENT for table `carreras`
+-- AUTO_INCREMENT de la tabla `carreras`
 --
 ALTER TABLE `carreras`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `equipos`
+-- AUTO_INCREMENT de la tabla `equipos`
 --
 ALTER TABLE `equipos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
 
 --
--- AUTO_INCREMENT for table `equipo_carreras`
+-- AUTO_INCREMENT de la tabla `equipo_carreras`
 --
 ALTER TABLE `equipo_carreras`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=195;
 
 --
--- AUTO_INCREMENT for table `equipo_integrantes`
+-- AUTO_INCREMENT de la tabla `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=224;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=228;
 
 --
--- AUTO_INCREMENT for table `integrantes_equipo`
+-- AUTO_INCREMENT de la tabla `integrantes_equipo`
 --
 ALTER TABLE `integrantes_equipo`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `notificaciones`
+-- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=173;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=182;
 
 --
--- AUTO_INCREMENT for table `solicitudes`
+-- AUTO_INCREMENT de la tabla `solicitudes`
 --
 ALTER TABLE `solicitudes`
-  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `solicitud_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
--- AUTO_INCREMENT for table `solicitudes_equipo`
+-- AUTO_INCREMENT de la tabla `solicitudes_equipo`
 --
 ALTER TABLE `solicitudes_equipo`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `usuarios`
+-- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=454;
 
 --
--- Constraints for dumped tables
+-- Restricciones para tablas volcadas
 --
 
 --
--- Constraints for table `equipos`
+-- Filtros para la tabla `equipos`
 --
 ALTER TABLE `equipos`
   ADD CONSTRAINT `equipos_ibfk_1` FOREIGN KEY (`creador_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `equipo_carreras`
+-- Filtros para la tabla `equipo_carreras`
 --
 ALTER TABLE `equipo_carreras`
   ADD CONSTRAINT `equipo_carreras_ibfk_1` FOREIGN KEY (`equipo_id`) REFERENCES `equipos` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `equipo_carreras_ibfk_2` FOREIGN KEY (`carrera_id`) REFERENCES `carreras` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `equipo_integrantes`
+-- Filtros para la tabla `equipo_integrantes`
 --
 ALTER TABLE `equipo_integrantes`
   ADD CONSTRAINT `equipo_integrantes_ibfk_1` FOREIGN KEY (`equipo_id`) REFERENCES `equipos` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `equipo_integrantes_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `integrantes_equipo`
+-- Filtros para la tabla `integrantes_equipo`
 --
 ALTER TABLE `integrantes_equipo`
   ADD CONSTRAINT `integrantes_equipo_ibfk_1` FOREIGN KEY (`equipo_id`) REFERENCES `equipos` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `notificaciones`
+-- Filtros para la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
   ADD CONSTRAINT `notificaciones_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `solicitudes`
+-- Filtros para la tabla `solicitudes`
 --
 ALTER TABLE `solicitudes`
   ADD CONSTRAINT `solicitudes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `solicitudes_ibfk_2` FOREIGN KEY (`equipo_id`) REFERENCES `equipos` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `solicitudes_equipo`
+-- Filtros para la tabla `solicitudes_equipo`
 --
 ALTER TABLE `solicitudes_equipo`
   ADD CONSTRAINT `solicitudes_equipo_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
